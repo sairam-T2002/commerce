@@ -1,27 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, ScrollView, StyleSheet, Dimensions, Image, Pressable } from 'react-native';
 
-const Carousel = ({ data, isImage }) => {
+const Carousel = ({ data, isImage, pagination = true }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const screenWidth = Dimensions.get('window').width;
+    const intervalRef = useRef(null);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
+    const startTimer = () => {
+        intervalRef.current = setInterval(() => {
             const nextIndex = (activeIndex + 1) % data.length;
             setActiveIndex(nextIndex);
         }, 5000);
+    };
 
-        return () => clearInterval(interval);
+    const resetTimer = () => {
+        // console.log("timer reset");
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        startTimer();
+    };
+
+    useEffect(() => {
+        startTimer();
+        return () => clearInterval(intervalRef.current);
     }, [activeIndex]);
 
     const handleScroll = (event) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
         const currentIndex = Math.round(contentOffsetX / screenWidth);
         setActiveIndex(currentIndex);
+        resetTimer();
     };
 
     return (
-        <View style={styles.container}>
+        <Pressable onPress={resetTimer} style={styles.container}>
             <ScrollView
                 horizontal
                 pagingEnabled
@@ -32,30 +45,37 @@ const Carousel = ({ data, isImage }) => {
             >
                 {data.map((item, index) => (
                     <View key={index} style={[styles.item, { width: screenWidth }]}>
-                        {isImage ? <View style={styles.imageWrapper}>
-                            <Image source={{ uri: item }} style={styles.image} />
-                        </View> : item}
+                        {isImage ? (
+                            <View style={styles.imageWrapper}>
+                                <Image source={{ uri: item }} style={styles.image} />
+                            </View>
+                        ) : (
+                            React.cloneElement(item, { resetTimer })
+                        )}
                     </View>
                 ))}
             </ScrollView>
-            <View style={styles.pagination}>
-                {data.map((_, index) => (
-                    <View
-                        key={index}
-                        style={[
-                            styles.paginationDot,
-                            index === activeIndex && styles.activeDot,
-                        ]}
-                    />
-                ))}
-            </View>
-        </View>
+            {pagination && (
+                <View style={styles.pagination}>
+                    {data.map((_, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.paginationDot,
+                                index === activeIndex && styles.activeDot,
+                            ]}
+                        />
+                    ))}
+                </View>
+            )}
+        </Pressable>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        position: 'relative',
     },
     item: {
         justifyContent: 'center',
@@ -76,7 +96,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
+        position: 'absolute',
+        bottom: 10,
+        left: 0,
+        right: 0,
     },
     paginationDot: {
         width: 8,
