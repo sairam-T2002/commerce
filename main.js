@@ -1,41 +1,59 @@
-import React, { useState, useRef, Suspense } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated } from 'react-native';
-import { PanGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { nav } from './Redux/Slices/ActiveScreen';
+import { actNav } from './Redux/Slices/CatlogNav';
 import Home from './Screens/1Home';
 import Search from './Screens/2Search';
 import Cart from './Screens/3Cart';
 import Profile from './Screens/4Profile';
+import { catlog } from './data';
 
 export default function Main() {
-    const [text, setText] = useState('');
+    const fullCatlog = [{ name: 'All' }, ...catlog];
+    const scrollViewRef = useRef(null);
     const [menu, setMenu] = useState(false);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
+    const actCat = useSelector((state) => state.ActCatlog.actNav);
     const dispatch = useDispatch();
     const menuAnimation = useRef(new Animated.Value(0)).current;
 
     const handleNavigation = (navigation) => {
         if (navigation !== screen) {
             dispatch(nav(navigation));
+            dispatch(actNav("All"));
         }
     };
 
     const handleMenuPress = () => {
-        // console.log("menu pressed");
         setMenu(men => !men);
         Animated.timing(
             menuAnimation,
             {
-                toValue: menu ? 0 : 1, // Slide menu in or out based on its current state
-                duration: 100, // Animation duration in milliseconds
-                useNativeDriver: true, // Use native driver for better performance
+                toValue: menu ? 0 : 1,
+                duration: 100,
+                useNativeDriver: true,
             }
         ).start();
     };
+    const scrollViewtoUst = (name) => {
+        const index = fullCatlog.findIndex(item => item.name === name);
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({ x: index * 90, animated: true });
+        }
+    }
+    useEffect(() => {
+        scrollViewtoUst(actCat);
+    }, [actCat])
+    const handleCatNavPress = (name) => {
+        if (name !== actCat) {
+            dispatch(actNav(name));
+        }
+    };
+
     const overlayClick = () => {
         setMenu(false);
         Animated.timing(
@@ -46,61 +64,12 @@ export default function Main() {
                 useNativeDriver: true,
             }
         ).start();
-    }
-
-    const handleGesture = event => {
-        const { translationX, translationY } = event.nativeEvent;
-        if (Math.abs(translationX) > Math.abs(translationY)) {
-            // Horizontal swipe
-            // if (translationX > 0) {
-            //     // Right swipe
-            //     const nextScreen = getNextScreen("right");
-            //     dispatch(nav(nextScreen));
-            // } else {
-            //     // Left swipe
-            //     const nextScreen = getNextScreen("left");
-            //     dispatch(nav(nextScreen));
-            // }
-        }
-    };
-
-    const getNextScreen = direction => {
-        switch (screen) {
-            case 'Home':
-                return direction === "right" ? 'Search' : 'Profile';
-            case 'Search':
-                return direction === "right" ? 'Cart' : 'Home';
-            case 'Cart':
-                return direction === "right" ? 'Profile' : 'Search';
-            case 'Profile':
-                return direction === "right" ? 'Home' : 'Cart';
-            default:
-                return 'Home';
-        }
-    };
-
-    const handleStateChange = event => {
-        if (event.nativeEvent.state === State.END) {
-            const { translationX, translationY } = event.nativeEvent;
-            if (Math.abs(translationX) > Math.abs(translationY)) {
-                // Horizontal swipe
-                if (translationX < 0) {
-                    // Right swipe
-                    const nextScreen = getNextScreen("right");
-                    dispatch(nav(nextScreen));
-                } else {
-                    // Left swipe
-                    const nextScreen = getNextScreen("left");
-                    dispatch(nav(nextScreen));
-                }
-            }
-        }
     };
 
     const renderScreen = () => {
         switch (screen) {
             case 'Home':
-                return <Home />;
+                return <Home scrollRef={scrollViewRef} fullCatlog={fullCatlog} />;
             case 'Search':
                 return <Search />;
             case 'Cart':
@@ -116,15 +85,9 @@ export default function Main() {
         <SafeAreaView style={styles.container}>
             <View style={styles.topView}>
                 {screen === "Search" ? (
-                    <View style={styles.searchContainer}>
-                        <Icon name="search" size={20} color={"#4f4f4f"} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Search"
-                            value={text}
-                            onChangeText={setText}
-                        />
-                    </View>
+                    <ScrollView ref={scrollViewRef} showsHorizontalScrollIndicator={false} horizontal={true} style={styles.catlogNavigator}>
+                        {fullCatlog.map((item, index) => (<Pressable key={index} onPress={() => handleCatNavPress(item.name)} style={actCat === item.name ? { ...styles.catNav, backgroundColor: 'white' } : styles.catNav}><Text>{item.name}</Text></Pressable>))}
+                    </ScrollView>
                 ) : (
                     <>
                         <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
@@ -138,15 +101,9 @@ export default function Main() {
                 )}
             </View>
             <View style={styles.middleView}>
-                <GestureHandlerRootView style={styles.container}>
-                    <PanGestureHandler
-                        onGestureEvent={handleGesture}
-                        onHandlerStateChange={handleStateChange}>
-                        <ScrollView>
-                            {renderScreen()}
-                        </ScrollView>
-                    </PanGestureHandler>
-                </GestureHandlerRootView >
+                <ScrollView>
+                    {renderScreen()}
+                </ScrollView>
             </View>
             <View style={styles.bottomView}>
                 <Pressable style={styles.nav} onPress={() => handleNavigation("Home")}>
@@ -188,20 +145,20 @@ const styles = StyleSheet.create({
     },
     topView: {
         flexDirection: 'row',
-        height: 50, // Adjust the height as needed
+        height: 50,
         backgroundColor: 'lightgray',
         justifyContent: 'center',
         alignItems: 'center',
     },
     middleView: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#fcf1d2',
         justifyContent: 'center',
         alignItems: 'center',
     },
     bottomView: {
         flexDirection: 'row',
-        height: 50, // Adjust the height as needed
+        height: 50,
         backgroundColor: 'lightgray',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -210,20 +167,19 @@ const styles = StyleSheet.create({
         padding: 5,
         margin: 5
     },
-    searchContainer: {
+    catlogNavigator: {
         flexDirection: 'row',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        width: '100%',
-        marginHorizontal: 15,
-        overflow: 'hidden',
-        alignItems: 'center',
-        paddingHorizontal: 10
-    },
-    input: {
-        height: 40,
         paddingHorizontal: 10,
-        width: '100%'
+    },
+    catNav: {
+        marginHorizontal: 10,
+        padding: 5,
+        paddingHorizontal: 15,
+        height: 30,
+        width: 70,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     menu: {
         position: 'absolute',

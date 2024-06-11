@@ -6,6 +6,7 @@ import Main from './main';
 export default function App() {
   return (
     <Provider store={store}>
+      <StatusBar barStyle={'light-content'}></StatusBar>
       <Main></Main>
     </Provider>
   );

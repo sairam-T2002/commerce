@@ -4,10 +4,17 @@ import Carousel from '../Components/Carousel';
 import Icon from 'react-native-vector-icons/Feather';
 import Cards from '../Components/Card';
 import { Imgdata, Featureddata, catlog } from '../data';
+import { nav } from '../Redux/Slices/ActiveScreen';
+import { actNav } from '../Redux/Slices/CatlogNav';
 
 export default function Home() {
-    const count = useSelector((state) => state.CartCount.count);
+    const actCat = useSelector((state) => state.ActCatlog.actNav);
     const dispatch = useDispatch();
+
+    const handleCatNavPress = (name) => {
+        dispatch(nav("Search"));
+        dispatch(actNav(name));
+    };
 
     return (
         <View style={styles.container}>
@@ -21,7 +28,7 @@ export default function Home() {
                 </View>
                 <View style={styles.catlogcontainer}>
                     {catlog.map((item, index) => (
-                        <View key={index} style={styles.catlogItem}>
+                        <Pressable onPress={() => handleCatNavPress(item.name)} key={index} style={styles.catlogItem}>
                             <View style={styles.circle}></View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 40 }}>
                                 <Text>{item.name}</Text>
@@ -29,8 +36,7 @@ export default function Home() {
                                     <Icon name="arrow-right" size={15} color={"#ffffff"} />
                                 </View>
                             </View>
-
-                        </View>
+                        </Pressable>
                     ))}
                 </View>
             </View>
@@ -94,21 +100,21 @@ const styles = StyleSheet.create({
         backgroundColor: 'lightgray',
         padding: 10,
         marginVertical: 5,
-        marginTop: 45,
+        marginTop: 55,
         borderRadius: 5,
         position: 'relative',
         borderWidth: 2,
-        borderColor: '#c4c081'
+        borderColor: '#e2b56b'
     },
     circle: {
         position: 'absolute',
-        top: -45,
-        marginHorizontal: '25%',
-        width: 90,
-        height: 90,
+        top: -55,
+        marginHorizontal: '17.5%',
+        width: 110,
+        height: 110,
         backgroundColor: 'cyan',
-        borderRadius: 45,
+        borderRadius: 55,
         borderWidth: 2,
-        borderColor: '#c4c081'
+        borderColor: '#e2b56b'
     },
 });

@@ -1,8 +1,15 @@
 import { StyleSheet, Text, View, Button, Image, Pressable, TextInput } from 'react-native';
 import { useState } from 'react';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 export default function Cards({ item, resetTimer }) {
     const [quantity, setQuantity] = useState(0);
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [items, setItems] = useState([
+        { label: 'Apple', value: 'apple' },
+        { label: 'Banana', value: 'banana' }
+    ]);
 
     const handleCart = () => {
         setQuantity(1);
@@ -28,6 +35,15 @@ export default function Cards({ item, resetTimer }) {
                 <Text style={{ marginTop: 10 }}>Price: ₹{item.price}</Text>
                 <Text style={{ marginTop: 10 }}>{item.description}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, marginRight: 30 }}>
+                    <DropDownPicker
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                        containerStyle={styles.dropdown}
+                    />
                     {quantity === 0 ? (
                         <Pressable onPress={handleCart} style={{ backgroundColor: 'green', padding: 5 }}>
                             <Text style={{ color: 'white' }}>Add to Cart</Text>
@@ -85,4 +101,7 @@ const styles = StyleSheet.create({
         padding: 2,
         borderRadius: 5,
     },
+    dropdown: {
+        width: 100
+    }
 });

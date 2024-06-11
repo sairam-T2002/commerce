@@ -9,7 +9,7 @@ export const ScreenSlice = createSlice({
     initialState,
     reducers: {
         nav: (state, action) => {
-            if (action !== action.payload)
+            if (state.ActiveScreen !== action.payload)
                 state.ActiveScreen = action.payload;
         },
     },
