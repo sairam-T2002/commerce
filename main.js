@@ -73,6 +73,10 @@ export default function Main() {
         ).start();
     };
 
+    const handleCheckOut = () => {
+        handleNavigation("Cart")
+    };
+
     const renderScreen = () => {
         if (middleScrollViewRef & middleScrollViewRef.current) {
             middleScrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
@@ -148,6 +152,13 @@ export default function Main() {
                     </Pressable>
                 </View>
             </Animated.View>
+            {screen === "Search" && cart.length > 0 && (
+                <View style={styles.checkoutOuter}>
+                    <Pressable onPress={handleCheckOut} style={styles.checkout}>
+                        <Text style={styles.checkoutText}>Check out</Text>
+                    </Pressable>
+                </View>
+            )}
             {menu && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
         </SafeAreaView>
     );
@@ -233,4 +244,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'lightgray'
     },
+    checkout: {
+        width: 340,
+        padding: 10,
+        backgroundColor: '#000',
+        borderRadius: 150,
+    },
+    checkoutText: {
+        color: 'white',
+        fontSize: 16,
+        textAlign: 'center'
+    },
+    checkoutOuter: {
+        width: '100%',
+        position: 'absolute',
+        bottom: 53,
+        alignItems: 'center'
+    }
 });
+

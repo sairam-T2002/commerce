@@ -1,38 +1,49 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { useSelector, useDispatch } from 'react-redux';
-import { decrement, increment } from '../Redux/Slices/CartSlice';
-import { actNav } from '../Redux/Slices/CatlogNav';
-import { products, catlog, Featureddata } from '../data';
+import { useSelector } from 'react-redux';
 import Cards from '../Components/Card';
+import { products } from '../data';
+
+let tempO = [];
 
 export default function Search() {
-    let prodcutsList = [];
-    let searchList = [];
+    const [filteredProducts, setFilteredProducts] = useState([]);
     const [text, setText] = useState('');
     const actCat = useSelector((state) => state.ActCatlog.actNav);
-    if (actCat === 'All') {
-        for (let key in products) {
-            prodcutsList = [...prodcutsList, ...products[key]]
+    const cart = useSelector((state) => state.Cart.items);
+
+    useEffect(() => {
+        let prodcutsList = [];
+        if (actCat === 'All') {
+            for (let key in products) {
+                prodcutsList = [...prodcutsList, ...products[key]]
+            }
+        } else {
+            prodcutsList = products[actCat];
         }
-        searchList = [...prodcutsList];
-    } else {
-        prodcutsList = products[actCat];
-        searchList = [...prodcutsList];
-    }
+        tempO = prodcutsList;
+        setFilteredProducts([...prodcutsList]);
+    }, [actCat])
+
     const handleSearch = (e) => {
+        if (e === '') {
+            setFilteredProducts([...tempO]);
+            setText(e);
+            return;
+        }
         const lowercasedInput = e.toLowerCase();
-        prodcutsList = searchList
-            .map(item => ({
-                value: item,
-                score: item.name.toLowerCase().includes(lowercasedInput) ? item.name.toLowerCase().indexOf(lowercasedInput) : Infinity
-            }))
-            .filter(item => item.score !== Infinity)
-            .sort((a, b) => a.score - b.score)
-            .map(item => item.value);
+        const temp = filteredProducts
+            .filter(item => item.name.toLowerCase().includes(lowercasedInput))
+            .sort((a, b) => {
+                const indexA = a.name.toLowerCase().indexOf(lowercasedInput);
+                const indexB = b.name.toLowerCase().indexOf(lowercasedInput);
+                return indexA - indexB;
+            });
         setText(e);
+        setFilteredProducts([...temp]);
     }
+
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
@@ -44,8 +55,8 @@ export default function Search() {
                     onChangeText={handleSearch}
                 />
             </View>
-            <View style={styles.productList}>
-                {prodcutsList.map((item, i) => (<Cards key={i} item={item} />))}
+            <View style={cart.length > 0 ? { ...styles.productList, marginBottom: 45 } : styles.productList}>
+                {filteredProducts.map((item, i) => (<Cards key={i} item={item} />))}
             </View>
         </View >
     );
@@ -79,8 +90,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        // padding: 10,
         width: '100%',
-        // backgroundColor: '#ffffff'
     }
 });
