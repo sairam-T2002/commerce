@@ -6,14 +6,19 @@ import Cards from '../Components/Card';
 import { Imgdata, Featureddata, catlog } from '../data';
 import { nav } from '../Redux/Slices/ActiveScreen';
 import { actNav } from '../Redux/Slices/CatlogNav';
+import { setLoading } from '../Redux/Slices/ActiveScreen';
 
 export default function Home() {
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const dispatch = useDispatch();
 
     const handleCatNavPress = (name) => {
+        dispatch(setLoading(true));
         dispatch(nav("Search"));
         dispatch(actNav(name));
+        setTimeout(() => {
+            dispatch(setLoading(false));
+        }, 5);
     };
 
     return (
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         height: 200,
         width: '100%',
-        padding: 10
+        padding: 5
     },
     item: {
         backgroundColor: 'lightblue',

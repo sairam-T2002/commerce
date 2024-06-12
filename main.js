@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated } from 'react-native';
+import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
-import { nav } from './Redux/Slices/ActiveScreen';
+import { nav, setLoading } from './Redux/Slices/ActiveScreen';
 import { actNav } from './Redux/Slices/CatlogNav';
 import Home from './Screens/1Home';
 import Search from './Screens/2Search';
@@ -15,16 +15,23 @@ import { catlog } from './data';
 export default function Main() {
     const fullCatlog = [{ name: 'All' }, ...catlog];
     const scrollViewRef = useRef(null);
+    const middleScrollViewRef = useRef(null);
     const [menu, setMenu] = useState(false);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
+    const isLoading = useSelector((state) => state.ActiveScreen.isLoading);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
+    const cart = useSelector((state) => state.Cart.items);
     const dispatch = useDispatch();
     const menuAnimation = useRef(new Animated.Value(0)).current;
 
     const handleNavigation = (navigation) => {
         if (navigation !== screen) {
+            dispatch(setLoading(true));
             dispatch(nav(navigation));
             dispatch(actNav("All"));
+            setTimeout(() => {
+                dispatch(setLoading(false));
+            }, 5);
         }
     };
 
@@ -67,9 +74,12 @@ export default function Main() {
     };
 
     const renderScreen = () => {
+        if (middleScrollViewRef & middleScrollViewRef.current) {
+            middleScrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
+        }
         switch (screen) {
             case 'Home':
-                return <Home scrollRef={scrollViewRef} fullCatlog={fullCatlog} />;
+                return <Home />;
             case 'Search':
                 return <Search />;
             case 'Cart':
@@ -101,9 +111,13 @@ export default function Main() {
                 )}
             </View>
             <View style={styles.middleView}>
-                <ScrollView>
-                    {renderScreen()}
-                </ScrollView>
+                {isLoading ? (
+                    <ActivityIndicator size="large" color="gray" />
+                ) : (
+                    <ScrollView ref={middleScrollViewRef}>
+                        {renderScreen()}
+                    </ScrollView>
+                )}
             </View>
             <View style={styles.bottomView}>
                 <Pressable style={styles.nav} onPress={() => handleNavigation("Home")}>
@@ -113,7 +127,14 @@ export default function Main() {
                     <Icon name="search" size={30} color={screen === "Search" ? "#c39178" : "#4f4f4f"} />
                 </Pressable>
                 <Pressable style={styles.nav} onPress={() => handleNavigation("Cart")}>
-                    <Icon name="shopping-cart" size={30} color={screen === "Cart" ? "#c39178" : "#4f4f4f"} />
+                    <View style={{ position: 'relative' }}>
+                        <Icon name="shopping-cart" size={30} color={screen === "Cart" ? "#c39178" : "#4f4f4f"} />
+                        {cart.length > 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{cart.length}</Text>
+                            </View>
+                        )}
+                    </View>
                 </Pressable>
                 <Pressable style={styles.nav} onPress={() => handleNavigation("Profile")}>
                     <Icon name="user" size={30} color={screen === "Profile" ? "#c39178" : "#4f4f4f"} />
@@ -166,6 +187,22 @@ const styles = StyleSheet.create({
     nav: {
         padding: 5,
         margin: 5
+    },
+    badge: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        backgroundColor: 'red',
+        borderRadius: 10,
+        minWidth: 20,
+        height: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    badgeText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     catlogNavigator: {
         flexDirection: 'row',

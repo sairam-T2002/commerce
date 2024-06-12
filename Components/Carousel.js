@@ -14,7 +14,6 @@ const Carousel = ({ data, isImage, pagination = true }) => {
     };
 
     const resetTimer = () => {
-        // console.log("timer reset");
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
         }

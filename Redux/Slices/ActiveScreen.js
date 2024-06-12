@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
     ActiveScreen: 'Home',
+    isLoading: false
 }
 
 export const ScreenSlice = createSlice({
@@ -12,9 +13,12 @@ export const ScreenSlice = createSlice({
             if (state.ActiveScreen !== action.payload)
                 state.ActiveScreen = action.payload;
         },
+        setLoading: (state, action) => {
+            state.isLoading = action.payload;
+        }
     },
 })
 
-export const { nav } = ScreenSlice.actions
+export const { nav, setLoading } = ScreenSlice.actions
 
 export default ScreenSlice.reducer

@@ -4,13 +4,35 @@ import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { decrement, increment } from '../Redux/Slices/CartSlice';
 import { actNav } from '../Redux/Slices/CatlogNav';
-import { products, catlog } from '../data';
+import { products, catlog, Featureddata } from '../data';
+import Cards from '../Components/Card';
 
 export default function Search() {
+    let prodcutsList = [];
+    let searchList = [];
     const [text, setText] = useState('');
     const actCat = useSelector((state) => state.ActCatlog.actNav);
-    // const count = useSelector((state) => state.CartCount.count)
-    // const dispatch = useDispatch()
+    if (actCat === 'All') {
+        for (let key in products) {
+            prodcutsList = [...prodcutsList, ...products[key]]
+        }
+        searchList = [...prodcutsList];
+    } else {
+        prodcutsList = products[actCat];
+        searchList = [...prodcutsList];
+    }
+    const handleSearch = (e) => {
+        const lowercasedInput = e.toLowerCase();
+        prodcutsList = searchList
+            .map(item => ({
+                value: item,
+                score: item.name.toLowerCase().includes(lowercasedInput) ? item.name.toLowerCase().indexOf(lowercasedInput) : Infinity
+            }))
+            .filter(item => item.score !== Infinity)
+            .sort((a, b) => a.score - b.score)
+            .map(item => item.value);
+        setText(e);
+    }
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
@@ -19,13 +41,11 @@ export default function Search() {
                     style={styles.input}
                     placeholder="Search"
                     value={text}
-                    onChangeText={setText}
+                    onChangeText={handleSearch}
                 />
             </View>
             <View style={styles.productList}>
-                <View style={styles.product}>
-                    <Text> </Text>
-                </View>
+                {prodcutsList.map((item, i) => (<Cards key={i} item={item} />))}
             </View>
         </View >
     );
@@ -35,10 +55,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#fcf1d2',
+        width: '100%'
     },
     searchContainer: {
         flexDirection: 'row',
@@ -47,7 +67,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginTop: 5,
         backgroundColor: 'white',
-        width: 'auto',
+        width: '100%',
     },
     input: {
         height: 40,
@@ -57,12 +77,10 @@ const styles = StyleSheet.create({
     productList: {
         flex: 1,
         flexDirection: 'column',
-        padding: 10
-    },
-    product: {
-        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // padding: 10,
         width: '100%',
-        height: 100,
-        backgroundColor: 'white'
+        // backgroundColor: '#ffffff'
     }
 });

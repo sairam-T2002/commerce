@@ -5,7 +5,7 @@ import CatlogNav from './Redux/Slices/CatlogNav';
 
 export const store = configureStore({
     reducer: {
-        CartCount: CartReducer,
+        Cart: CartReducer,
         ActiveScreen: ActiveScreen,
         ActCatlog: CatlogNav
     },

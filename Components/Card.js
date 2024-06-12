@@ -1,28 +1,63 @@
-import { StyleSheet, Text, View, Button, Image, Pressable, TextInput } from 'react-native';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Image, Pressable, TextInput } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { useSelector, useDispatch } from 'react-redux';
+import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/Slices/CartSlice';
+
 
 export default function Cards({ item, resetTimer }) {
     const [quantity, setQuantity] = useState(0);
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
-    const [items, setItems] = useState([
-        { label: 'Apple', value: 'apple' },
-        { label: 'Banana', value: 'banana' }
-    ]);
-
+    const [value, setValue] = useState(item.qunatityList[0]);
+    const [items, setItems] = useState(item.qunatityList.map(ex => ({ label: ex, value: ex })));
+    const [priceI, setPriceI] = useState(item.qunatityList.indexOf(value));
+    const cart = useSelector((state) => state.Cart.items);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        const cardprd = cart.find(ex => ex.prd_id === item.prd_id);
+        if (cardprd) {
+            setQuantity(cardprd.Uquantity);
+            setValue(cardprd.Rquantity);
+        }
+    }, [])
     const handleCart = () => {
         setQuantity(1);
-        resetTimer();
+        dispatch(addItem({ prd_id: item.prd_id, Uquantity: 1, Rquantity: value, price: item.price[priceI] }));
+        if (resetTimer && typeof resetTimer === 'function') {
+            resetTimer();
+        }
     };
 
     const handleQuantity = (action) => {
         if (action === '+') {
+            dispatch(updateQuantity({ id: item.prd_id, quantity: quantity + 1 }));
             setQuantity((quan) => quan + 1);
         } else {
+            if (quantity === 1) {
+                dispatch(removeItem(item.prd_id));
+            }
+            dispatch(updateQuantity({ id: item.prd_id, quantity: Math.max(quantity - 1, 0) }));
             setQuantity((quan) => Math.max(quan - 1, 0));
         }
-        resetTimer();
+        if (resetTimer && typeof resetTimer === 'function') {
+            resetTimer();
+        }
+    };
+
+    const handleDropDown = () => {
+        setOpen(op => !op);
+        if (resetTimer && typeof resetTimer === 'function') {
+            resetTimer();
+        }
+    };
+
+    const handleDropDownSelect = (event) => {
+        setValue(event());
+        setPriceI(index => item.qunatityList.indexOf(event()));
+        dispatch(updateRQuantity({ id: item.prd_id, quantity: event() }))
+        if (resetTimer && typeof resetTimer === 'function') {
+            resetTimer();
+        }
     };
 
     return (
@@ -30,32 +65,37 @@ export default function Cards({ item, resetTimer }) {
             <View>
                 <Image source={{ uri: item.image }} style={styles.image} />
             </View>
-            <View style={{ flexDirection: 'column', flex: 1, width: '100%' }}>
+            <View style={{ flexDirection: 'column', flex: 1, width: '100%', marginLeft: 5 }}>
                 <Text style={{ fontSize: 20 }}>{item.name}</Text>
-                <Text style={{ marginTop: 10 }}>Price: ₹{item.price}</Text>
-                <Text style={{ marginTop: 10 }}>{item.description}</Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, marginRight: 30 }}>
+                <Text style={{ marginTop: 35 }}>Price: ₹{item.price[priceI]}</Text>
+                {/* <Text style={{ marginTop: 10 }}> </Text> */}
+                <View style={styles.controlsContainer}>
                     <DropDownPicker
                         open={open}
                         value={value}
                         items={items}
-                        setOpen={setOpen}
-                        setValue={setValue}
+                        setOpen={handleDropDown}
+                        setValue={handleDropDownSelect}
                         setItems={setItems}
-                        containerStyle={styles.dropdown}
+                        containerStyle={styles.dropdownContainer}
+                        style={styles.dropdown}
+                        dropDownContainerStyle={{ ...styles.dropdownBox, height: item.qunatityList.length * 45 }}
+                        placeholder="Qty"
+                        placeholderStyle={styles.placeholderStyle}
+                        dropDownDirection="TOP"
                     />
                     {quantity === 0 ? (
-                        <Pressable onPress={handleCart} style={{ backgroundColor: 'green', padding: 5 }}>
-                            <Text style={{ color: 'white' }}>Add to Cart</Text>
+                        <Pressable onPress={handleCart} style={styles.addToCartButton}>
+                            <Text style={styles.addToCartButtonText}>Add to Cart</Text>
                         </Pressable>
                     ) : (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={styles.quantityContainer}>
                             <Pressable onPress={() => handleQuantity('+')} style={styles.quantityButton}>
-                                <Text style={{ color: 'white' }}>+</Text>
+                                <Text style={{ color: 'white', fontSize: 16 }}>+</Text>
                             </Pressable>
-                            <TextInput keyboardType="numeric" style={{ textAlign: 'center', fontSize: 16, padding: 10 }}>{quantity}</TextInput>
+                            <TextInput editable={false} keyboardType="numeric" style={styles.quantityInput} value={String(quantity)} />
                             <Pressable onPress={() => handleQuantity('-')} style={styles.quantityButton}>
-                                <Text style={{ color: 'white' }}>-</Text>
+                                <Text style={{ color: 'white', fontSize: 16 }}>-</Text>
                             </Pressable>
                         </View>
                     )}
@@ -66,32 +106,27 @@ export default function Cards({ item, resetTimer }) {
 }
 
 const styles = StyleSheet.create({
-    // cards: {
-    //     // flex: 1,
-    //     width: 'auto',
-    //     height: 'auto',
-    //     flexDirection: 'row',
-    //     backgroundColor: 'white',
-    //     borderRadius: 10,
-    //     marginTop: 10,
-    // },
-    // image: {
-    //     width: 140,
-    //     height: 140,
-    //     borderRadius: 10,
-    //     margin: 5
-    // },
     cards: {
         flexDirection: 'row',
         backgroundColor: 'white',
         borderRadius: 10,
-        marginTop: 10,
+        marginTop: 5,
+        marginBottom: 5,
+        padding: 5,
     },
     image: {
-        width: 140,
+        width: 120,
         height: 140,
         borderRadius: 10,
-        margin: 5,
+    },
+    controlsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: -5,
+        marginRight: 30,
+        height: 50,
     },
     quantityButton: {
         alignItems: 'center',
@@ -101,7 +136,61 @@ const styles = StyleSheet.create({
         padding: 2,
         borderRadius: 5,
     },
+    dropdownContainer: {
+        width: 100,
+        marginRight: 8,
+        marginLeft: 2,
+        height: 60,
+    },
     dropdown: {
-        width: 100
-    }
+        backgroundColor: '#fafafa',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        height: 30,
+    },
+    dropdownBox: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        height: 45,
+    },
+    placeholderStyle: {},
+    addToCartButton: {
+        backgroundColor: 'green',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        borderRadius: 5,
+        height: 47,
+        marginBottom: 8,
+    },
+    addToCartButtonText: {
+        color: 'white',
+    },
+    quantityContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        paddingHorizontal: 2,
+        paddingVertical: 5,
+        height: 50,
+        marginBottom: 10,
+        borderRadius: 10
+    },
+    quantityInput: {
+        textAlign: 'center',
+        fontSize: 16,
+        padding: 5,
+        paddingVertical: 6,
+        width: 30,
+        height: 30,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginHorizontal: 5,
+        color: 'black'
+    },
 });
