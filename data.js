@@ -31,7 +31,14 @@ export const products = {
         { prd_id: 'prd4', name: 'prd4', price: [40, 80], isVeg: true, qunatityList: ['1/2 Kg', '1 Kg'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
         { prd_id: 'prd5', name: 'prd5', price: [50], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
         { prd_id: 'prd6', name: 'prd6', price: [60], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' }],
-    Item2: [],
+
+    Item2: [
+        { prd_id: 'prd7', name: 'prd7', price: [70], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
+        { prd_id: 'prd8', name: 'prd8', price: [80], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
+        { prd_id: 'prd9', name: 'prd9', price: [90], isVeg: false, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
+        { prd_id: 'prd10', name: 'prd10', price: [100], isVeg: true, qunatityList: ['1 Kg'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
+        { prd_id: 'prd11', name: 'prd11', price: [110], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' },
+        { prd_id: 'prd12', name: 'prd12', price: [120], isVeg: true, qunatityList: ['1 PKT'], image: 'https://www.ndtv.com/cooks/images/bread%20%281%29.jpg' }],
     Item3: [],
     Item4: [],
     Item5: [],
