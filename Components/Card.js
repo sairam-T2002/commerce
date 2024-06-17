@@ -4,22 +4,28 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/Slices/CartSlice';
 
-
 export default function Cards({ item, resetTimer }) {
+    // console.log(item);
     const [quantity, setQuantity] = useState(0);
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(item.qunatityList[0]);
     const [items, setItems] = useState(item.qunatityList.map(ex => ({ label: ex, value: ex })));
-    const [priceI, setPriceI] = useState(item.qunatityList.indexOf(value));
+    const [priceI, setPriceI] = useState(0);
     const cart = useSelector((state) => state.Cart.items);
     const dispatch = useDispatch();
+
     useEffect(() => {
         const cardprd = cart.find(ex => ex.prd_id === item.prd_id);
         if (cardprd) {
             setQuantity(cardprd.Uquantity);
             setValue(cardprd.Rquantity);
+            setPriceI(item.qunatityList.indexOf(cardprd.Rquantity));
+        } else {
+            setQuantity(0);
+            setPriceI(0);
         }
-    }, [])
+    }, [cart, item.prd_id, item.qunatityList]);
+
     const handleCart = () => {
         setQuantity(1);
         dispatch(addItem({ prd_id: item.prd_id, Uquantity: 1, Rquantity: value, price: item.price[priceI] }));
@@ -53,8 +59,8 @@ export default function Cards({ item, resetTimer }) {
 
     const handleDropDownSelect = (event) => {
         setValue(event());
-        setPriceI(index => item.qunatityList.indexOf(event()));
-        dispatch(updateRQuantity({ id: item.prd_id, quantity: event() }))
+        setPriceI(item.qunatityList.indexOf(event()));
+        dispatch(updateRQuantity({ id: item.prd_id, quantity: event() }));
         if (resetTimer && typeof resetTimer === 'function') {
             resetTimer();
         }
@@ -68,7 +74,6 @@ export default function Cards({ item, resetTimer }) {
             <View style={{ flexDirection: 'column', flex: 1, width: '100%', marginLeft: 5 }}>
                 <Text style={{ fontSize: 20 }}>{item.name}</Text>
                 <Text style={{ marginTop: 35 }}>Price: ₹{item.price[priceI]}</Text>
-                {/* <Text style={{ marginTop: 10 }}> </Text> */}
                 <View style={styles.controlsContainer}>
                     <DropDownPicker
                         open={open}
@@ -91,11 +96,11 @@ export default function Cards({ item, resetTimer }) {
                     ) : (
                         <View style={styles.quantityContainer}>
                             <Pressable onPress={() => handleQuantity('+')} style={styles.quantityButton}>
-                                <Text style={{ color: 'white', fontSize: 16 }}>+</Text>
+                                <Text style={{ color: 'black', fontSize: 20 }}>+</Text>
                             </Pressable>
                             <TextInput editable={false} keyboardType="numeric" style={styles.quantityInput} value={String(quantity)} />
                             <Pressable onPress={() => handleQuantity('-')} style={styles.quantityButton}>
-                                <Text style={{ color: 'white', fontSize: 16 }}>-</Text>
+                                <Text style={{ color: 'black', fontSize: 20 }}>-</Text>
                             </Pressable>
                         </View>
                     )}
@@ -113,6 +118,9 @@ const styles = StyleSheet.create({
         marginTop: 5,
         marginBottom: 5,
         padding: 5,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     image: {
         width: 120,
@@ -132,8 +140,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: 30,
-        backgroundColor: 'green',
-        padding: 2,
         borderRadius: 5,
     },
     dropdownContainer: {
@@ -174,7 +180,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderWidth: 1,
         borderColor: '#ccc',
-        paddingHorizontal: 2,
         paddingVertical: 5,
         height: 50,
         marginBottom: 10,
@@ -183,14 +188,12 @@ const styles = StyleSheet.create({
     quantityInput: {
         textAlign: 'center',
         fontSize: 16,
-        padding: 5,
         paddingVertical: 6,
         width: 30,
         height: 30,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginHorizontal: 5,
         color: 'black'
     },
 });

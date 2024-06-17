@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import Cards from '../Components/Card';
 import { products } from '../data';
+
+const BannerWidth = Dimensions.get('window').width;
+const BannerHeight = 260;
 
 let tempO = [];
 
@@ -55,9 +58,10 @@ export default function Search() {
                     onChangeText={handleSearch}
                 />
             </View>
-            <View style={cart.length > 0 ? { ...styles.productList, marginBottom: 45 } : styles.productList}>
+            {filteredProducts.length > 0 ? <View style={cart.length > 0 ? { ...styles.productList, marginBottom: 45 } : styles.productList}>
                 {filteredProducts.map((item, i) => (<Cards key={i} item={item} />))}
-            </View>
+            </View> : <Text>No Products</Text>}
+
         </View >
     );
 }
@@ -69,7 +73,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#fcf1d2',
-        width: '100%'
+        width: '100%',
+        padding: 5
     },
     searchContainer: {
         flexDirection: 'row',
@@ -90,6 +95,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%',
+        width: BannerWidth,
     }
 });

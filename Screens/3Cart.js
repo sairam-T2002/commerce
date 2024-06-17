@@ -1,24 +1,22 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { decrement, increment } from '../Redux/Slices/CartSlice';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-export default function Search() {
-    // const count = useSelector((state) => state.CartCount.count)
-    // const dispatch = useDispatch()
+const Cart = () => {
     return (
         <View style={styles.container}>
             <Text>Cart</Text>
-        </View >
+        </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: 'row',
         backgroundColor: '#fff',
-        alignItems: 'center',
+        padding: 5,
         justifyContent: 'center',
+        alignItems: 'center'
     },
 });
+
+export default Cart;

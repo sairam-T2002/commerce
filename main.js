@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
-import { nav, setLoading } from './Redux/Slices/ActiveScreen';
+import { nav, setLoading, navBack } from './Redux/Slices/ActiveScreen';
 import { actNav } from './Redux/Slices/CatlogNav';
 import Home from './Screens/1Home';
 import Search from './Screens/2Search';
@@ -19,6 +19,7 @@ export default function Main() {
     const [menu, setMenu] = useState(false);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
     const isLoading = useSelector((state) => state.ActiveScreen.isLoading);
+    const navigator = useSelector((state) => state.ActiveScreen.navigator);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const cart = useSelector((state) => state.Cart.items);
     const dispatch = useDispatch();
@@ -55,6 +56,30 @@ export default function Main() {
     useEffect(() => {
         scrollViewtoUst(actCat);
     }, [actCat])
+    useEffect(() => {
+        const backAction = () => {
+            // console.log("back pressed");
+            console.log(navigator);
+            // console.log(screen);
+            if (navigator.length > 1) {
+                dispatch(navBack());
+                console.log(navigator);
+                console.log(screen);
+                return false;
+            }
+            else {
+                return true;
+            }
+            // Return true to indicate that we have handled the back button press
+            // Return false to let the default back button behavior take place
+            // return true;
+        };
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+        // Clean up the event listener when the component unmounts
+        return () => backHandler.remove();
+    }, []);
     const handleCatNavPress = (name) => {
         if (name !== actCat) {
             dispatch(actNav(name));
@@ -133,7 +158,7 @@ export default function Main() {
                 <Pressable style={styles.nav} onPress={() => handleNavigation("Cart")}>
                     <View style={{ position: 'relative' }}>
                         <Icon name="shopping-cart" size={30} color={screen === "Cart" ? "#c39178" : "#4f4f4f"} />
-                        {cart.length > 0 && (
+                        {screen !== "Cart" && cart.length > 0 && (
                             <View style={styles.badge}>
                                 <Text style={styles.badgeText}>{cart.length}</Text>
                             </View>

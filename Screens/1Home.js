@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View, Button, Image, Pressable, TextInput } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, Pressable, Dimensions } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import Carousel from '../Components/Carousel';
+import Carousel from 'react-native-banner-carousel';
 import Icon from 'react-native-vector-icons/Feather';
 import Cards from '../Components/Card';
 import { Imgdata, Featureddata, catlog } from '../data';
@@ -8,9 +9,15 @@ import { nav } from '../Redux/Slices/ActiveScreen';
 import { actNav } from '../Redux/Slices/CatlogNav';
 import { setLoading } from '../Redux/Slices/ActiveScreen';
 
+const BannerWidth = Dimensions.get('window').width;
+const BannerHeight = 260;
+
 export default function Home() {
+    const [isAutoplay, setIsAutoplay] = useState(true);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const dispatch = useDispatch();
+    const cr1 = useRef(null);
+    const cr2 = useRef(null);
 
     const handleCatNavPress = (name) => {
         dispatch(setLoading(true));
@@ -21,10 +28,42 @@ export default function Home() {
         }, 5);
     };
 
+    const resetTimer = () => {
+        setIsAutoplay(false);
+        setTimeout(() => {
+            setIsAutoplay(true);
+        }, 100);
+    };
+
+    const handleImagePress = () => {
+        resetTimer();
+    };
+
+    const renderImage = (image, index) => {
+        return (
+            <Pressable key={index} onPress={handleImagePress} style={styles.imageContainer}>
+                <Image style={styles.image} source={{ uri: image }} />
+            </Pressable>
+        );
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.section1}>
-                <Carousel isImage={true} data={Imgdata} />
+                <Carousel
+                    autoplay={isAutoplay}
+                    autoplayTimeout={5000}
+                    loop
+                    index={0}
+                    pageSize={BannerWidth}
+                    useNativeDriver={true}
+                    dotColor="gray"
+                    inactiveDotColor="black"
+                    ref={cr1}
+                // ref={}
+                >
+                    {Imgdata.map((image, index) => renderImage(image, index))}
+                </Carousel>
             </View>
             <View style={styles.section2}>
                 <View style={styles.headerContainer}>
@@ -50,10 +89,24 @@ export default function Home() {
                     <Icon name="star" size={20} color={"#b8095a"} />
                     <Text style={styles.header}>Featured</Text>
                 </View>
-                <Carousel pagination={false} isImage={false} data={Featureddata.map(item => <Cards key={item.name} item={item} />)} />
-                {/* <Cards item={Featureddata[0]} /> */}
+                <View style={styles.cards}>
+                    <Carousel
+                        autoplay={isAutoplay}
+                        autoplayTimeout={5000}
+                        loop
+                        index={0}
+                        pageSize={BannerWidth - 20} // Adjusted for padding
+                        useNativeDriver={true}
+                        showsPageIndicator={false}
+                        ref={cr2}
+                    >
+                        {Featureddata.map((item, index) => (
+                            <Cards key={index} item={item} resetTimer={resetTimer} />
+                        ))}
+                    </Carousel>
+                </View>
             </View>
-        </View >
+        </View>
     );
 }
 
@@ -65,24 +118,17 @@ const styles = StyleSheet.create({
     section1: {
         height: 250,
         width: '100%',
-        padding: 10
+        marginBottom: 10,
+        marginTop: 10
     },
     section2: {
-        flexDirection: 'column'
+        flexDirection: 'column',
+        marginBottom: 10,
     },
     section3: {
         flexDirection: 'column',
         height: 200,
         width: '100%',
-        padding: 5
-    },
-    item: {
-        backgroundColor: 'lightblue',
-        borderRadius: 5,
-        height: 200,
-        padding: 20,
-        marginLeft: 25,
-        marginRight: 25,
     },
     header: {
         marginLeft: 5,
@@ -122,4 +168,20 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#e2b56b'
     },
+    imageContainer: {
+        width: BannerWidth,
+        height: BannerHeight,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 10,
+    },
+    cards: {
+        paddingHorizontal: 10,
+        alignItems: 'center',
+    }
 });
