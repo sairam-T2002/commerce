@@ -33,10 +33,11 @@ export const cartSlice = createSlice({
             }
         },
         updateRQuantity: (state, action) => {
-            const { id, quantity } = action.payload;
+            const { id, quantity, price } = action.payload;
             const item = state.items.find(item => item.prd_id === id);
             if (item) {
                 item.Rquantity = quantity;
+                item.price = price;
             }
         },
         clearCart: state => {

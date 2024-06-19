@@ -48,3 +48,13 @@ export const products = {
     Item9: [],
     Item10: [],
 }
+
+export const colorScheme = {
+    statusbar: 'lightgray',
+    statusbarContent: 'dark-content',
+    navigationbar: 'lightgray',
+    navigationIcons: '#4f4f4f',
+    navigationActive: '#c39178',
+    appbackgroud: '#fcf1d2',
+    activeCat: 'white'
+}

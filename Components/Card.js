@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Image, Pressable, TextInput } from 'react-nativ
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/Slices/CartSlice';
+import Icon from 'react-native-vector-icons/Feather';
 
 export default function Cards({ item, resetTimer }) {
     // console.log(item);
@@ -60,7 +61,7 @@ export default function Cards({ item, resetTimer }) {
     const handleDropDownSelect = (event) => {
         setValue(event());
         setPriceI(item.qunatityList.indexOf(event()));
-        dispatch(updateRQuantity({ id: item.prd_id, quantity: event() }));
+        dispatch(updateRQuantity({ id: item.prd_id, quantity: event(), price: item.price[item.qunatityList.indexOf(event())] }));
         if (resetTimer && typeof resetTimer === 'function') {
             resetTimer();
         }
@@ -100,7 +101,8 @@ export default function Cards({ item, resetTimer }) {
                             </Pressable>
                             <TextInput editable={false} keyboardType="numeric" style={styles.quantityInput} value={String(quantity)} />
                             <Pressable onPress={() => handleQuantity('-')} style={styles.quantityButton}>
-                                <Text style={{ color: 'black', fontSize: 20 }}>-</Text>
+                                {quantity > 1 ? <Text style={{ color: 'black', fontSize: 20 }}>-</Text> : <Icon name="trash-2" size={20} color={"#4f4f4f"} />}
+
                             </Pressable>
                         </View>
                     )}

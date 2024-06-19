@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, TextInput, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
@@ -10,13 +10,13 @@ import Home from './Screens/1Home';
 import Search from './Screens/2Search';
 import Cart from './Screens/3Cart';
 import Profile from './Screens/4Profile';
-import { catlog } from './data';
+import { catlog, colorScheme } from './data';
 
 export default function Main() {
     const fullCatlog = [{ name: 'All' }, ...catlog];
     const scrollViewRef = useRef(null);
-    const middleScrollViewRef = useRef(null);
     const [menu, setMenu] = useState(false);
+    const [notification, setNotification] = useState(false);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
     const isLoading = useSelector((state) => state.ActiveScreen.isLoading);
     const navigator = useSelector((state) => state.ActiveScreen.navigator);
@@ -24,6 +24,8 @@ export default function Main() {
     const cart = useSelector((state) => state.Cart.items);
     const dispatch = useDispatch();
     const menuAnimation = useRef(new Animated.Value(0)).current;
+    const notificationAnimation = useRef(new Animated.Value(0)).current;
+    const { homeScale, searchScale, cartScale, profileScale } = useRef({ homeScale: new Animated.Value(1), searchScale: new Animated.Value(1), cartScale: new Animated.Value(1), profileScale: new Animated.Value(1) }).current;
 
     const handleNavigation = (navigation) => {
         if (navigation !== screen) {
@@ -47,39 +49,43 @@ export default function Main() {
             }
         ).start();
     };
+    const handleNotificationPress = () => {
+        setNotification(not => !not);
+        Animated.timing(
+            notificationAnimation,
+            {
+                toValue: notification ? 0 : 1,
+                duration: 100,
+                useNativeDriver: true,
+            }
+        ).start();
+    };
+
     const scrollViewtoUst = (name) => {
         const index = fullCatlog.findIndex(item => item.name === name);
         if (scrollViewRef.current) {
             scrollViewRef.current.scrollTo({ x: index * 90, animated: true });
         }
-    }
+    };
+
     useEffect(() => {
         scrollViewtoUst(actCat);
-    }, [actCat])
+    }, [actCat]);
+
     useEffect(() => {
         const backAction = () => {
-            // console.log("back pressed");
-            console.log(navigator);
-            // console.log(screen);
             if (navigator.length > 1) {
                 dispatch(navBack());
-                console.log(navigator);
-                console.log(screen);
-                return false;
-            }
-            else {
                 return true;
             }
-            // Return true to indicate that we have handled the back button press
-            // Return false to let the default back button behavior take place
-            // return true;
+            return false;
         };
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
-        // Clean up the event listener when the component unmounts
         return () => backHandler.remove();
-    }, []);
+    }, [navigator]);
+
     const handleCatNavPress = (name) => {
         if (name !== actCat) {
             dispatch(actNav(name));
@@ -87,25 +93,35 @@ export default function Main() {
     };
 
     const overlayClick = () => {
-        setMenu(false);
-        Animated.timing(
-            menuAnimation,
-            {
-                toValue: menu ? 0 : 1,
-                duration: 100,
-                useNativeDriver: true,
-            }
-        ).start();
+        if (menu) {
+            setMenu(false);
+            Animated.timing(
+                menuAnimation,
+                {
+                    toValue: menu ? 0 : 1,
+                    duration: 100,
+                    useNativeDriver: true,
+                }
+            ).start();
+        } else if (notification) {
+            setNotification(false);
+            Animated.timing(
+                notificationAnimation,
+                {
+                    toValue: notification ? 0 : 1,
+                    duration: 100,
+                    useNativeDriver: true,
+                }
+            ).start();
+        }
+
     };
 
     const handleCheckOut = () => {
-        handleNavigation("Cart")
+        handleNavigation("Cart");
     };
 
     const renderScreen = () => {
-        if (middleScrollViewRef & middleScrollViewRef.current) {
-            middleScrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
-        }
         switch (screen) {
             case 'Home':
                 return <Home />;
@@ -120,21 +136,63 @@ export default function Main() {
         }
     };
 
+    const animateButtonPress = (scaleValue) => {
+        Animated.sequence([
+            Animated.timing(scaleValue, {
+                toValue: 0.75,
+                duration: 10,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleValue, {
+                toValue: 1,
+                duration: 10,
+                useNativeDriver: true,
+            })
+        ]).start();
+    };
+
+    const handleNavigationPress = async (screen, scaleValue) => {
+        // animateButtonPress(scaleValue); // Start button press animation
+
+        await new Promise(resolve => {
+            Animated.sequence([
+                Animated.timing(scaleValue, {
+                    toValue: 0.75,
+                    duration: 10,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(scaleValue, {
+                    toValue: 1,
+                    duration: 10,
+                    useNativeDriver: true,
+                })
+            ]).start(resolve);
+        });
+
+        // Animation has completed, now navigate
+        handleNavigation(screen);
+    }
+
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topView}>
                 {screen === "Search" ? (
                     <ScrollView ref={scrollViewRef} showsHorizontalScrollIndicator={false} horizontal={true} style={styles.catlogNavigator}>
-                        {fullCatlog.map((item, index) => (<Pressable key={index} onPress={() => handleCatNavPress(item.name)} style={actCat === item.name ? { ...styles.catNav, backgroundColor: 'white' } : styles.catNav}><Text>{item.name}</Text></Pressable>))}
+                        {fullCatlog.map((item, index) => (
+                            <Pressable key={index} onPress={() => handleCatNavPress(item.name)} style={actCat === item.name ? { ...styles.catNav, backgroundColor: colorScheme.activeCat } : styles.catNav}>
+                                <Text>{item.name}</Text>
+                            </Pressable>
+                        ))}
                     </ScrollView>
                 ) : (
                     <>
                         <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
-                            <AntDesign name="menuunfold" size={30} color="#4f4f4f" />
+                            <AntDesign name="menuunfold" size={30} color={colorScheme.navigationIcons} />
                         </Pressable>
                         <View style={{ flex: 1 }}></View>
-                        <Pressable style={{ padding: 5, margin: 5 }}>
-                            <Icon name="bell" size={30} color={"#4f4f4f"} />
+                        <Pressable onPress={handleNotificationPress} style={{ padding: 5, margin: 5 }}>
+                            <Icon name="bell" size={30} color={colorScheme.navigationIcons} />
                         </Pressable>
                     </>
                 )}
@@ -143,38 +201,51 @@ export default function Main() {
                 {isLoading ? (
                     <ActivityIndicator size="large" color="gray" />
                 ) : (
-                    <ScrollView ref={middleScrollViewRef}>
+                    <View>
                         {renderScreen()}
-                    </ScrollView>
+                    </View>
                 )}
             </View>
             <View style={styles.bottomView}>
-                <Pressable style={styles.nav} onPress={() => handleNavigation("Home")}>
-                    <Icon name="home" size={30} color={screen === "Home" ? "#c39178" : "#4f4f4f"} />
+                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Home", homeScale)}><Animated.View style={{ transform: [{ scale: homeScale }] }}>
+                    <Icon name="home" size={30} color={screen === "Home" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
+                </Animated.View>
                 </Pressable>
-                <Pressable style={styles.nav} onPress={() => handleNavigation("Search")}>
-                    <Icon name="search" size={30} color={screen === "Search" ? "#c39178" : "#4f4f4f"} />
+                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Search", searchScale)}>
+                    <Animated.View style={{ transform: [{ scale: searchScale }] }}>
+                        <Icon name="search" size={30} color={screen === "Search" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
+                    </Animated.View>
                 </Pressable>
-                <Pressable style={styles.nav} onPress={() => handleNavigation("Cart")}>
-                    <View style={{ position: 'relative' }}>
-                        <Icon name="shopping-cart" size={30} color={screen === "Cart" ? "#c39178" : "#4f4f4f"} />
+                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Cart", cartScale)}>
+                    <Animated.View style={{ position: 'relative', transform: [{ scale: cartScale }] }}>
+                        <Icon name="shopping-cart" size={30} color={screen === "Cart" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
                         {screen !== "Cart" && cart.length > 0 && (
                             <View style={styles.badge}>
                                 <Text style={styles.badgeText}>{cart.length}</Text>
                             </View>
                         )}
-                    </View>
+                    </Animated.View>
                 </Pressable>
-                <Pressable style={styles.nav} onPress={() => handleNavigation("Profile")}>
-                    <Icon name="user" size={30} color={screen === "Profile" ? "#c39178" : "#4f4f4f"} />
+                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Profile", profileScale)}>
+                    <Animated.View style={{ transform: [{ scale: profileScale }] }}>
+                        <Icon name="user" size={30} color={screen === "Profile" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
+                    </Animated.View>
                 </Pressable>
             </View>
-            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-200, 0] }) }] }]}>
+            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-250, 0] }) }] }]}>
                 <View style={styles.menuIcon}>
                     <Text>Menu</Text>
                     <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
-                        <AntDesign name="menufold" size={30} color="#4f4f4f" />
+                        <AntDesign name="menufold" size={30} color={colorScheme.navigationIcons} />
                     </Pressable>
+                </View>
+            </Animated.View>
+            <Animated.View style={[styles.notification, { transform: [{ translateX: notificationAnimation.interpolate({ inputRange: [0, 1], outputRange: [250, 0] }) }] }]}>
+                <View style={styles.notificationIcon}>
+                    <Pressable onPress={handleNotificationPress} style={{ padding: 5, margin: 5 }}>
+                        <Icon name="bell" size={30} color={colorScheme.navigationIcons} />
+                    </Pressable>
+                    <Text>Notification</Text>
                 </View>
             </Animated.View>
             {screen === "Search" && cart.length > 0 && (
@@ -184,7 +255,7 @@ export default function Main() {
                     </Pressable>
                 </View>
             )}
-            {menu && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
+            {(notification || menu) && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
         </SafeAreaView>
     );
 }
@@ -203,20 +274,20 @@ const styles = StyleSheet.create({
     topView: {
         flexDirection: 'row',
         height: 50,
-        backgroundColor: 'lightgray',
+        backgroundColor: colorScheme.statusbar,
         justifyContent: 'center',
         alignItems: 'center',
     },
     middleView: {
         flex: 1,
-        backgroundColor: '#fcf1d2',
+        backgroundColor: colorScheme.appbackgroud,
         justifyContent: 'center',
         alignItems: 'center',
     },
     bottomView: {
         flexDirection: 'row',
         height: 50,
-        backgroundColor: 'lightgray',
+        backgroundColor: colorScheme.navigationbar,
         justifyContent: 'space-between',
         alignItems: 'center',
     },
@@ -258,7 +329,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         height: '100%',
         flexDirection: 'column',
-        width: 200,
+        width: 250,
         backgroundColor: '#ffffff',
         elevation: 10,
         zIndex: 2,
@@ -267,7 +338,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: 'lightgray'
+        backgroundColor: colorScheme.statusbar
+    },
+    notification: {
+        position: 'absolute',
+        height: '100%',
+        flexDirection: 'column',
+        width: 250,
+        backgroundColor: '#ffffff',
+        right: 0,
+        elevation: 10,
+        zIndex: 2,
+    },
+    notificationIcon: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: colorScheme.statusbar
     },
     checkout: {
         width: 340,
@@ -287,4 +374,3 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     }
 });
-

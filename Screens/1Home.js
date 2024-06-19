@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, Pressable, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, Dimensions, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import Carousel from 'react-native-banner-carousel';
 import Icon from 'react-native-vector-icons/Feather';
@@ -48,7 +48,7 @@ export default function Home() {
     };
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.section1}>
                 <Carousel
                     autoplay={isAutoplay}
@@ -106,7 +106,7 @@ export default function Home() {
                     </Carousel>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
