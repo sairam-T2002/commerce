@@ -16,8 +16,6 @@ export default function Home() {
     const [isAutoplay, setIsAutoplay] = useState(true);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const dispatch = useDispatch();
-    const cr1 = useRef(null);
-    const cr2 = useRef(null);
 
     const handleCatNavPress = (name) => {
         dispatch(setLoading(true));
@@ -59,8 +57,6 @@ export default function Home() {
                     useNativeDriver={true}
                     dotColor="gray"
                     inactiveDotColor="black"
-                    ref={cr1}
-                // ref={}
                 >
                     {Imgdata.map((image, index) => renderImage(image, index))}
                 </Carousel>
@@ -98,7 +94,6 @@ export default function Home() {
                         pageSize={BannerWidth - 20} // Adjusted for padding
                         useNativeDriver={true}
                         showsPageIndicator={false}
-                        ref={cr2}
                     >
                         {Featureddata.map((item, index) => (
                             <Cards key={index} item={item} resetTimer={resetTimer} />

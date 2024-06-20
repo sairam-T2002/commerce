@@ -29,7 +29,7 @@ export default function Cards({ item, resetTimer }) {
 
     const handleCart = () => {
         setQuantity(1);
-        dispatch(addItem({ prd_id: item.prd_id, Uquantity: 1, Rquantity: value, price: item.price[priceI] }));
+        dispatch(addItem({ name: item.name, prd_id: item.prd_id, Uquantity: 1, Rquantity: value, price: item.price[priceI] }));
         if (resetTimer && typeof resetTimer === 'function') {
             resetTimer();
         }
@@ -74,7 +74,7 @@ export default function Cards({ item, resetTimer }) {
             </View>
             <View style={{ flexDirection: 'column', flex: 1, width: '100%', marginLeft: 5 }}>
                 <Text style={{ fontSize: 20 }}>{item.name}</Text>
-                <Text style={{ marginTop: 35 }}>Price: ₹{item.price[priceI]}</Text>
+                <Text style={{ marginTop: 35 }}>Price: ₹ {item.price[priceI]}</Text>
                 <View style={styles.controlsContainer}>
                     <DropDownPicker
                         open={open}

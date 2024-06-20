@@ -158,12 +158,12 @@ export default function Main() {
             Animated.sequence([
                 Animated.timing(scaleValue, {
                     toValue: 0.75,
-                    duration: 10,
+                    duration: 50,
                     useNativeDriver: true,
                 }),
                 Animated.timing(scaleValue, {
                     toValue: 1,
-                    duration: 10,
+                    duration: 50,
                     useNativeDriver: true,
                 })
             ]).start(resolve);
