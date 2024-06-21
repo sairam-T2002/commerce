@@ -23,7 +23,6 @@ export default function Cards({ item, resetTimer }) {
             setPriceI(item.qunatityList.indexOf(cardprd.Rquantity));
         } else {
             setQuantity(0);
-            setPriceI(0);
         }
     }, [cart, item.prd_id, item.qunatityList]);
 
@@ -42,8 +41,9 @@ export default function Cards({ item, resetTimer }) {
         } else {
             if (quantity === 1) {
                 dispatch(removeItem(item.prd_id));
+            } else {
+                dispatch(updateQuantity({ id: item.prd_id, quantity: Math.max(quantity - 1, 0) }));
             }
-            dispatch(updateQuantity({ id: item.prd_id, quantity: Math.max(quantity - 1, 0) }));
             setQuantity((quan) => Math.max(quan - 1, 0));
         }
         if (resetTimer && typeof resetTimer === 'function') {

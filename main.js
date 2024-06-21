@@ -1,16 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { nav, setLoading, navBack } from './Redux/Slices/ActiveScreen';
+import { payMethodTriggerAnimation } from './Redux/Slices/Animations';
 import { actNav } from './Redux/Slices/CatlogNav';
 import Home from './Screens/1Home';
 import Search from './Screens/2Search';
 import Cart from './Screens/3Cart';
 import Profile from './Screens/4Profile';
 import { catlog, colorScheme } from './data';
+
+const ScreenWidth = Dimensions.get('window').width;
+const ScreenHeight = Dimensions.get('window').height;
 
 export default function Main() {
     const fullCatlog = [{ name: 'All' }, ...catlog];
@@ -22,9 +26,12 @@ export default function Main() {
     const navigator = useSelector((state) => state.ActiveScreen.navigator);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const cart = useSelector((state) => state.Cart.items);
+    const payMethodTriggerAnimation = useSelector((state) => state.Animations.payMethod);
     const dispatch = useDispatch();
     const menuAnimation = useRef(new Animated.Value(0)).current;
     const notificationAnimation = useRef(new Animated.Value(0)).current;
+    const payMethodAnimation = useRef(new Animated.Value(0)).current;
+
     const { homeScale, searchScale, cartScale, profileScale } = useRef({ homeScale: new Animated.Value(1), searchScale: new Animated.Value(1), cartScale: new Animated.Value(1), profileScale: new Animated.Value(1) }).current;
 
     const handleNavigation = (navigation) => {
@@ -81,10 +88,24 @@ export default function Main() {
             return false;
         };
 
+        // dispatch(setPayMethodAnimation(payMethodAnimation));
+
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
         return () => backHandler.remove();
     }, [navigator]);
+
+    useEffect(() => {
+        Animated.timing(
+            payMethodAnimation,
+            {
+                toValue: payMethodTriggerAnimation ? 0 : 1,
+                duration: 100,
+                useNativeDriver: true,
+            }
+        ).start();
+
+    }, [payMethodTriggerAnimation])
 
     const handleCatNavPress = (name) => {
         if (name !== actCat) {
@@ -232,7 +253,7 @@ export default function Main() {
                     </Animated.View>
                 </Pressable>
             </View>
-            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-250, 0] }) }] }]}>
+            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-80 * ScreenWidth / 100, 0] }) }] }]}>
                 <View style={styles.menuIcon}>
                     <Text>Menu</Text>
                     <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
@@ -240,13 +261,16 @@ export default function Main() {
                     </Pressable>
                 </View>
             </Animated.View>
-            <Animated.View style={[styles.notification, { transform: [{ translateX: notificationAnimation.interpolate({ inputRange: [0, 1], outputRange: [250, 0] }) }] }]}>
+            <Animated.View style={[styles.notification, { transform: [{ translateX: notificationAnimation.interpolate({ inputRange: [0, 1], outputRange: [80 * ScreenWidth / 100, 0] }) }] }]}>
                 <View style={styles.notificationIcon}>
                     <Pressable onPress={handleNotificationPress} style={{ padding: 5, margin: 5 }}>
                         <Icon name="bell" size={30} color={colorScheme.navigationIcons} />
                     </Pressable>
                     <Text>Notification</Text>
                 </View>
+            </Animated.View>
+            <Animated.View style={[styles.payMethod, { transform: [{ translateY: payMethodAnimation.interpolate({ inputRange: [0, 1], outputRange: [80 * ScreenHeight / 100, 0] }) }] }]}>
+                <Text>Payment methods</Text>
             </Animated.View>
             {screen === "Search" && cart.length > 0 && (
                 <View style={styles.checkoutOuter}>
@@ -329,7 +353,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         height: '100%',
         flexDirection: 'column',
-        width: 250,
+        width: 80 * ScreenWidth / 100,
         backgroundColor: '#ffffff',
         elevation: 10,
         zIndex: 2,
@@ -344,7 +368,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         height: '100%',
         flexDirection: 'column',
-        width: 250,
+        width: 80 * ScreenWidth / 100,
         backgroundColor: '#ffffff',
         right: 0,
         elevation: 10,
@@ -372,5 +396,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 53,
         alignItems: 'center'
+    },
+    payMethod: {
+        position: 'absolute',
+        width: ScreenWidth,
+        height: ScreenHeight * 80 / 100,
+        flexDirection: 'column',
+        elevation: 10,
+        zIndex: 2,
+        backgroundColor: '#37373d',
+        bottom: 0
     }
 });

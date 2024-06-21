@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between'
     },
     proceed: {
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginTop: 5,
     },
@@ -189,6 +189,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
+        margin: 10
+    },
+    paymentMethod: {
+        margin: 10
     }
 });
 
