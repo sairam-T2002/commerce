@@ -26,7 +26,7 @@ export default function Main() {
     const navigator = useSelector((state) => state.ActiveScreen.navigator);
     const actCat = useSelector((state) => state.ActCatlog.actNav);
     const cart = useSelector((state) => state.Cart.items);
-    const payMethodTriggerAnimation = useSelector((state) => state.Animations.payMethod);
+    const payMethodBool = useSelector((state) => state.Animations.payMethod);
     const dispatch = useDispatch();
     const menuAnimation = useRef(new Animated.Value(0)).current;
     const notificationAnimation = useRef(new Animated.Value(0)).current;
@@ -96,16 +96,17 @@ export default function Main() {
     }, [navigator]);
 
     useEffect(() => {
+        console.log('payment animation');
         Animated.timing(
             payMethodAnimation,
             {
-                toValue: payMethodTriggerAnimation ? 0 : 1,
+                toValue: payMethodBool ? 0 : 1,
                 duration: 100,
                 useNativeDriver: true,
             }
         ).start();
 
-    }, [payMethodTriggerAnimation])
+    }, [payMethodBool])
 
     const handleCatNavPress = (name) => {
         if (name !== actCat) {
@@ -130,6 +131,16 @@ export default function Main() {
                 notificationAnimation,
                 {
                     toValue: notification ? 0 : 1,
+                    duration: 100,
+                    useNativeDriver: true,
+                }
+            ).start();
+        } else if (payMethodBool) {
+            dispatch(payMethodTriggerAnimation(false));
+            Animated.timing(
+                payMethodAnimation,
+                {
+                    toValue: payMethodBool ? 0 : 1,
                     duration: 100,
                     useNativeDriver: true,
                 }
@@ -269,7 +280,7 @@ export default function Main() {
                     <Text>Notification</Text>
                 </View>
             </Animated.View>
-            <Animated.View style={[styles.payMethod, { transform: [{ translateY: payMethodAnimation.interpolate({ inputRange: [0, 1], outputRange: [80 * ScreenHeight / 100, 0] }) }] }]}>
+            <Animated.View style={[styles.payMethod, { transform: [{ translateY: payMethodAnimation.interpolate({ inputRange: [0, 1], outputRange: [0, 80 * ScreenHeight / 100] }) }] }]}>
                 <Text>Payment methods</Text>
             </Animated.View>
             {screen === "Search" && cart.length > 0 && (
@@ -279,7 +290,7 @@ export default function Main() {
                     </Pressable>
                 </View>
             )}
-            {(notification || menu) && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
+            {(notification || menu || payMethodBool) && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
         </SafeAreaView>
     );
 }
@@ -404,7 +415,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         elevation: 10,
         zIndex: 2,
-        backgroundColor: '#37373d',
+        backgroundColor: 'white',
         bottom: 0
     }
 });

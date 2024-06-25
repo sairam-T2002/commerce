@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Image, ScrollView, Pressable, TextInput } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/Slices/CartSlice';
+import { payMethodTriggerAnimation } from '../Redux/Slices/Animations';
 
 const Cart = () => {
     const [total, setTotal] = useState([]);
     const cart = useSelector((state) => state.Cart.items);
     const delCharge = useSelector((state) => state.Cart.deliveryCharge);
     const dispatch = useDispatch();
+    const payMethodBool = useSelector((state) => state.Animations.payMethod);
+    const paymethodRef = useRef(null);
     console.log(cart);
     useEffect(() => {
         setTotal([...cart.map(item => item.price * item.Uquantity)])
@@ -27,6 +30,21 @@ const Cart = () => {
             }
         }
     };
+    const PressOutchangePayment = () => {
+        if (paymethodRef.current) {
+            paymethodRef.current.setNativeProps({
+                style: [styles.payMethod]
+            });
+        }
+        dispatch(payMethodTriggerAnimation(!payMethodBool));
+    }
+    const PressInchangePayment = () => {
+        if (paymethodRef.current) {
+            paymethodRef.current.setNativeProps({
+                style: [styles.payMethod, { backgroundColor: '#1f1f1f' }]
+            });
+        }
+    }
     return (
         <View style={styles.container}>
             {cart.length === 0
@@ -78,15 +96,14 @@ const Cart = () => {
                             <Text>₹ {delCharge}</Text>
                         </View>
                         <View style={styles.proceed}>
-                            <Pressable style={styles.paymentMethod}>
+                            <Pressable ref={paymethodRef} onPressIn={PressInchangePayment} onPressOut={PressOutchangePayment} style={styles.payMethod}>
                                 <FontAwesome name="money" size={20} color={"#4f4f4f"} />
-                                <Text>   Proceed to pay ₹ {delCharge + total.reduce((accumulator, currentValue) => {
-                                    return accumulator + currentValue;
-                                }, 0)}</Text>
+                                <Text>   Simpl   </Text>
+                                <FontAwesome name="caret-up" size={20} color={"#4f4f4f"} />
                             </Pressable>
                             <Pressable style={styles.pay}>
                                 <FontAwesome name="money" size={20} color={"#4f4f4f"} />
-                                <Text>   Proceed to pay ₹ {delCharge + total.reduce((accumulator, currentValue) => {
+                                <Text>   Pay ₹ {delCharge + total.reduce((accumulator, currentValue) => {
                                     return accumulator + currentValue;
                                 }, 0)}</Text>
                             </Pressable>
@@ -176,23 +193,32 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between'
     },
     proceed: {
-        justifyContent: 'space-between',
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 5,
+        marginTop: 10,
     },
     pay: {
         backgroundColor: '#e2c08d',
         borderRadius: 10,
         padding: 10,
         backgroundColor: '#fcc522',
-        width: '85%',
+        width: '60%',
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        margin: 10
     },
-    paymentMethod: {
-        margin: 10
+    payMethod: {
+        flexDirection: 'row',
+        width: '35%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#d0d5da',
+        backgroundColor: '#d0d5da',
+        borderRadius: 10,
+        padding: 10,
+        marginRight: 15
     }
 });
 

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-    payMethod: true
+    payMethod: false
 }
 
 export const Animations = createSlice({
