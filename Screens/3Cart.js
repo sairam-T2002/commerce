@@ -12,7 +12,6 @@ const Cart = () => {
     const delCharge = useSelector((state) => state.Cart.deliveryCharge);
     const dispatch = useDispatch();
     const payMethodBool = useSelector((state) => state.Animations.payMethod);
-    const paymethodRef = useRef(null);
     console.log(cart);
     useEffect(() => {
         setTotal([...cart.map(item => item.price * item.Uquantity)])
@@ -31,19 +30,7 @@ const Cart = () => {
         }
     };
     const PressOutchangePayment = () => {
-        if (paymethodRef.current) {
-            paymethodRef.current.setNativeProps({
-                style: [styles.payMethod]
-            });
-        }
         dispatch(payMethodTriggerAnimation(!payMethodBool));
-    }
-    const PressInchangePayment = () => {
-        if (paymethodRef.current) {
-            paymethodRef.current.setNativeProps({
-                style: [styles.payMethod, { backgroundColor: '#1f1f1f' }]
-            });
-        }
     }
     return (
         <View style={styles.container}>
@@ -96,12 +83,12 @@ const Cart = () => {
                             <Text>₹ {delCharge}</Text>
                         </View>
                         <View style={styles.proceed}>
-                            <Pressable ref={paymethodRef} onPressIn={PressInchangePayment} onPressOut={PressOutchangePayment} style={styles.payMethod}>
-                                <FontAwesome name="money" size={20} color={"#4f4f4f"} />
-                                <Text>   Simpl   </Text>
+                            <Pressable android_ripple={{ color: 'lightblue' }} onPressOut={PressOutchangePayment} style={styles.payMethod}>
+                                <Image source={require('../assets/gpay.png')} style={styles.paymethodIcon} />
+                                <Text>   Gpay   </Text>
                                 <FontAwesome name="caret-up" size={20} color={"#4f4f4f"} />
                             </Pressable>
-                            <Pressable style={styles.pay}>
+                            <Pressable android_ripple={{ color: '#dcdcaa' }} style={styles.pay}>
                                 <FontAwesome name="money" size={20} color={"#4f4f4f"} />
                                 <Text>   Pay ₹ {delCharge + total.reduce((accumulator, currentValue) => {
                                     return accumulator + currentValue;
@@ -219,6 +206,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         marginRight: 15
+    },
+    paymethodIcon: {
+        width: 20,
+        height: 20,
+        borderRadius: 12,
     }
 });
 
