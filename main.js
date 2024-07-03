@@ -168,23 +168,7 @@ export default function Main() {
         }
     };
 
-    const animateButtonPress = (scaleValue) => {
-        Animated.sequence([
-            Animated.timing(scaleValue, {
-                toValue: 0.75,
-                duration: 10,
-                useNativeDriver: true,
-            }),
-            Animated.timing(scaleValue, {
-                toValue: 1,
-                duration: 10,
-                useNativeDriver: true,
-            })
-        ]).start();
-    };
-
     const handleNavigationPress = async (screen, scaleValue) => {
-        // animateButtonPress(scaleValue); // Start button press animation
 
         await new Promise(resolve => {
             Animated.sequence([
@@ -285,7 +269,7 @@ export default function Main() {
             </Animated.View>
             {screen === "Search" && cart.length > 0 && (
                 <View style={styles.checkoutOuter}>
-                    <Pressable onPress={handleCheckOut} style={styles.checkout}>
+                    <Pressable android_ripple={{ color: '#c1ccc1' }} onPress={handleCheckOut} style={styles.checkout}>
                         <Text style={styles.checkoutText}>Check out</Text>
                     </Pressable>
                 </View>

@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/Slices/CartSlice';
 import { payMethodTriggerAnimation } from '../Redux/Slices/Animations';
+import { nav, setLoading, navBack } from '../Redux/Slices/ActiveScreen';
+import { actNav } from '../Redux/Slices/CatlogNav';
 
 const Cart = () => {
     const [total, setTotal] = useState([]);
@@ -29,6 +31,14 @@ const Cart = () => {
             }
         }
     };
+    const handleAddItems = () => {
+        dispatch(setLoading(true));
+        dispatch(nav("Search"));
+        dispatch(actNav("All"));
+        setTimeout(() => {
+            dispatch(setLoading(false));
+        }, 5);
+    };
     const PressOutchangePayment = () => {
         dispatch(payMethodTriggerAnimation(!payMethodBool));
     }
@@ -38,9 +48,10 @@ const Cart = () => {
                 ?
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Image source={require('../assets/Empty_cart.png')} style={styles.logo} />
-                    <Text>Empty cart</Text>
-                    <View style={styles.addItem}>
-                        <Pressable style={styles.addItembtn}>
+                    <View style={{ bottom: '-50%', borderRadius: 10, width: '140%', padding: 5, alignItems: 'center', overflow: 'hidden', }}>
+                        <Pressable onPress={handleAddItems} android_ripple={{
+                            color: '#cccccc', borderless: false
+                        }} style={{ backgroundColor: '#50b8fe', borderRadius: 10, padding: 5, alignItems: 'center', width: '100%' }}>
                             <Text>Add Items</Text>
                         </Pressable>
                     </View>
