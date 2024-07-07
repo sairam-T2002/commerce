@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, FontAwesome6 } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { nav, setLoading, navBack } from './Redux/Slices/ActiveScreen';
@@ -12,6 +12,7 @@ import Search from './Screens/2Search';
 import Cart from './Screens/3Cart';
 import Profile from './Screens/4Profile';
 import { catlog, colorScheme } from './data';
+import Custommap from './Components/Custommap';
 
 const ScreenWidth = Dimensions.get('window').width;
 const ScreenHeight = Dimensions.get('window').height;
@@ -203,8 +204,26 @@ export default function Main() {
                     </ScrollView>
                 ) : (
                     <>
-                        <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
-                            <AntDesign name="menuunfold" size={30} color={colorScheme.navigationIcons} />
+                        <Pressable
+                            android_ripple={{ color: 'gray' }}
+                            onPress={handleMenuPress}
+                            style={{
+                                overflow: 'hidden',
+                                flex: 1,
+                                padding: 5,
+                                margin: 5,
+                                flexDirection: 'row',
+                                alignItems: 'center', // Center content vertically
+                            }}
+                        >
+                            {/* <AntDesign name="menuunfold" size={30} color={colorScheme.navigationIcons} /> */}
+                            <FontAwesome6 name="location-dot" size={30} color={colorScheme.navigationIcons} />
+                            <View style={{ marginLeft: 5 }}>
+                                <Text style={{ fontWeight: 'bold' }}>Ambur</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail">
+                                    No:24/b Valaiyalkar Street
+                                </Text>
+                            </View>
                         </Pressable>
                         <View style={{ flex: 1 }}></View>
                         <Pressable onPress={handleNotificationPress} style={{ padding: 5, margin: 5 }}>
@@ -248,12 +267,19 @@ export default function Main() {
                     </Animated.View>
                 </Pressable>
             </View>
-            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-80 * ScreenWidth / 100, 0] }) }] }]}>
-                <View style={styles.menuIcon}>
-                    <Text>Menu</Text>
-                    <Pressable onPress={handleMenuPress} style={{ padding: 5, margin: 5 }}>
-                        <AntDesign name="menufold" size={30} color={colorScheme.navigationIcons} />
-                    </Pressable>
+            <Animated.View style={[styles.menu, { transform: [{ translateY: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [ScreenHeight, 0] }) }] }]}>
+                <View style={styles.menuContainer}>
+                    <View style={styles.mapContainer}>
+                        <Custommap />
+                    </View>
+                    <View style={styles.addressContainter}>
+                        <TextInput style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 5 }} placeholder='Enter Adress'></TextInput>
+                        <TextInput style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 5, marginVertical: 5 }} placeholder='Enter Landmark (optional)'></TextInput>
+                        <Pressable android_ripple={{ color: 'blue' }} onPress={handleMenuPress} style={{ padding: 10, marginTop: 5, borderWidth: 1, backgroundColor: '#3478c3', alignItems: 'center' }}>
+                            <Text style={{ color: 'white' }}>Deliver here</Text>
+                            {/* <FontAwesome6 name="location-dot" size={30} color={colorScheme.navigationIcons} /> */}
+                        </Pressable>
+                    </View>
                 </View>
             </Animated.View>
             <Animated.View style={[styles.notification, { transform: [{ translateX: notificationAnimation.interpolate({ inputRange: [0, 1], outputRange: [80 * ScreenWidth / 100, 0] }) }] }]}>
@@ -348,16 +374,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         height: '100%',
         flexDirection: 'column',
-        width: 80 * ScreenWidth / 100,
+        width: "100%",
         backgroundColor: '#ffffff',
         elevation: 10,
         zIndex: 2,
-    },
-    menuIcon: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: colorScheme.statusbar
     },
     notification: {
         position: 'absolute',
@@ -401,5 +421,18 @@ const styles = StyleSheet.create({
         zIndex: 2,
         backgroundColor: 'white',
         bottom: 0
+    },
+    menuContainer: {
+        flex: 1,
+        padding: 5
+    },
+    mapContainer: {
+        flex: 3,
+        padding: 10,
+        justifyContent: 'center',
+        marginVertical: 5
+    },
+    addressContainter: {
+        flex: 1
     }
 });

@@ -1,55 +1,67 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { LocationHelper } from '../LocationHelper'; // Make sure this path is correct
 
+const Custommap = () => {
+    const [region, setRegion] = useState({
+        latitude: 12.790361,
+        longitude: 78.716606,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+    });
 
-const Custommap = ({
-    initialRegion,
-    markerColor = 'red',
-    onMarkerChange,
-    style
-}) => {
-    const [marker, setMarker] = useState(initialRegion);
+    useEffect(() => {
+        checkLocationPermissionAndSetPosition();
+    }, []);
 
-    const handleMarkerChange = (newLocation) => {
-        setMarker(newLocation);
-        if (onMarkerChange) {
-            onMarkerChange(newLocation);
+    const checkLocationPermissionAndSetPosition = async () => {
+        const isServiceEnabled = await LocationHelper.isLocationServicesEnabled();
+        if (!isServiceEnabled) {
+            Alert.alert('Location Service Disabled', 'Please enable location services in your device settings.');
+            return;
+        }
+
+        const hasPermission = await LocationHelper.requestLocationPermission();
+        if (!hasPermission) {
+            Alert.alert('Permission Denied', 'Location permission is required to show your position on the map.');
+            return;
+        }
+
+        const location = await LocationHelper.getCurrentLocation();
+        if (location) {
+            setRegion(prevRegion => ({
+                ...prevRegion,
+                latitude: location.latitude,
+                longitude: location.longitude,
+            }));
+        } else {
+            Alert.alert('Location Error', 'Unable to get your current location.');
         }
     };
 
     return (
-        <View style={styles.container}>
-            <MapView
-                style={[styles.map, style]}
-                initialRegion={{
-                    ...initialRegion,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
+        <MapView
+            style={styles.map}
+            region={region}
+            onRegionChangeComplete={setRegion}
+        >
+            <Marker
+                draggable
+                coordinate={{
+                    latitude: region.latitude,
+                    longitude: region.longitude,
                 }}
-                onPress={(e) => handleMarkerChange(e.nativeEvent.coordinate)}
-            >
-                <Marker
-                    draggable
-                    pinColor={markerColor}
-                    coordinate={marker}
-                    onDragEnd={(e) => handleMarkerChange(e.nativeEvent.coordinate)}
-                />
-            </MapView>
-        </View>
+                title="Your Location"
+                description="This marker represents your current location"
+            />
+        </MapView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     map: {
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
+        ...StyleSheet.absoluteFillObject,
     },
 });
 
