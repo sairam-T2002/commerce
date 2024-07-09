@@ -169,11 +169,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 10,
+        overflow: 'hidden'
     },
     image: {
         width: '100%',
         height: '100%',
         borderRadius: 10,
+        overflow: 'hidden'
     },
     cards: {
         paddingHorizontal: 10,
