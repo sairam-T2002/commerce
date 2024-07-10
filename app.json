@@ -12,7 +12,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "GMAP_KEY"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +23,12 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
-      "package": "com.sairamt.commerce"
+      "package": "com.sairamt.commerce",
+      "config": {
+        "googleMaps": {
+          "apiKey": "GMAP_KEY"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

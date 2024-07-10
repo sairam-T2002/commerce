@@ -270,7 +270,7 @@ export default function Main() {
             <Animated.View style={[styles.menu, { transform: [{ translateY: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [ScreenHeight, 0] }) }] }]}>
                 <View style={styles.menuContainer}>
                     <View style={styles.mapContainer}>
-                        <Custommap />
+                        <Custommap isActive={menu} />
                     </View>
                     <View style={styles.addressContainter}>
                         <TextInput style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 5 }} placeholder='Enter Adress'></TextInput>
