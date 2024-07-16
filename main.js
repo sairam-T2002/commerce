@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AntDesign, FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { nav, setLoading, navBack } from './Redux/Slices/ActiveScreen';
@@ -13,6 +13,7 @@ import Cart from './Screens/3Cart';
 import Profile from './Screens/4Profile';
 import { catlog, colorScheme } from './data';
 import Custommap from './Components/Custommap';
+import { UserDataHelper } from './LocalStorage';
 
 const ScreenWidth = Dimensions.get('window').width;
 const ScreenHeight = Dimensions.get('window').height;

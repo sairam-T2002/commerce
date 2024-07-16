@@ -46,13 +46,18 @@ const Cart = () => {
         <View style={styles.container}>
             {cart.length === 0
                 ?
-                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <View style={styles.emptyCartContainer}>
                     <Image source={require('../assets/Empty_cart.png')} style={styles.logo} />
-                    <View style={{ bottom: '-50%', borderRadius: 10, width: '140%', padding: 5, alignItems: 'center', overflow: 'hidden', }}>
-                        <Pressable onPress={handleAddItems} android_ripple={{
-                            color: '#cccccc', borderless: false
-                        }} style={{ backgroundColor: '#50b8fe', borderRadius: 10, padding: 5, alignItems: 'center', width: '100%' }}>
-                            <Text>Add Items</Text>
+                    <View style={styles.addItemsButtonContainer}>
+                        <Pressable
+                            onPress={handleAddItems}
+                            android_ripple={{
+                                color: '#cccccc',
+                                borderless: false
+                            }}
+                            style={styles.addItemsButton}
+                        >
+                            <Text style={{ color: 'white' }}>Add Items</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -114,8 +119,31 @@ const Cart = () => {
 
 const styles = StyleSheet.create({
     container: {
-        // flex: 1,
-        flexDirection: 'column',
+        flex: 1,  // This ensures the container takes up the full screen height
+    },
+    emptyCartContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logo: {
+        width: 200,
+        height: 200,
+        resizeMode: 'contain',
+    },
+    addItemsButtonContainer: {
+        position: 'absolute',
+        bottom: 10,  // Adjust this value to set the distance from the bottom
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    addItemsButton: {
+        backgroundColor: 'black',
+        borderRadius: 10,
+        padding: 10,
+        alignItems: 'center',
+        width: '100%',  // Adjust width as needed
     },
     subContainer: {
         flex: 1,
