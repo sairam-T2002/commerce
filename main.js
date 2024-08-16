@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
@@ -23,6 +23,11 @@ export default function Main() {
     const scrollViewRef = useRef(null);
     const [menu, setMenu] = useState(false);
     const [notification, setNotification] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const usernameRef = useRef(null);
+    const passwordRef = useRef(null);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
     const isLoading = useSelector((state) => state.ActiveScreen.isLoading);
     const navigator = useSelector((state) => state.ActiveScreen.navigator);
@@ -34,7 +39,12 @@ export default function Main() {
     const notificationAnimation = useRef(new Animated.Value(0)).current;
     const payMethodAnimation = useRef(new Animated.Value(0)).current;
 
-    const { homeScale, searchScale, cartScale, profileScale } = useRef({ homeScale: new Animated.Value(1), searchScale: new Animated.Value(1), cartScale: new Animated.Value(1), profileScale: new Animated.Value(1) }).current;
+    const { homeScale, searchScale, cartScale, profileScale } = useRef({
+        homeScale: new Animated.Value(1),
+        searchScale: new Animated.Value(1),
+        cartScale: new Animated.Value(1),
+        profileScale: new Animated.Value(1)
+    }).current;
 
     const handleNavigation = (navigation) => {
         if (navigation !== screen) {
@@ -48,16 +58,13 @@ export default function Main() {
     };
 
     const handleMenuPress = () => {
-        setMenu(men => !men);
-        Animated.timing(
-            menuAnimation,
-            {
-                toValue: menu ? 0 : 1,
-                duration: 100,
-                useNativeDriver: true,
-            }
-        ).start();
+        setModalVisible(true);
     };
+
+    const handleCloseModal = () => {
+        setModalVisible(false);
+    };
+
     const handleNotificationPress = () => {
         setNotification(not => !not);
         Animated.timing(
@@ -90,8 +97,6 @@ export default function Main() {
             return false;
         };
 
-        // dispatch(setPayMethodAnimation(payMethodAnimation));
-
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
         return () => backHandler.remove();
@@ -107,8 +112,7 @@ export default function Main() {
                 useNativeDriver: true,
             }
         ).start();
-
-    }, [payMethodBool])
+    }, [payMethodBool]);
 
     const handleCatNavPress = (name) => {
         if (name !== actCat) {
@@ -117,17 +121,7 @@ export default function Main() {
     };
 
     const overlayClick = () => {
-        if (menu) {
-            setMenu(false);
-            Animated.timing(
-                menuAnimation,
-                {
-                    toValue: menu ? 0 : 1,
-                    duration: 100,
-                    useNativeDriver: true,
-                }
-            ).start();
-        } else if (notification) {
+        if (notification) {
             setNotification(false);
             Animated.timing(
                 notificationAnimation,
@@ -148,7 +142,6 @@ export default function Main() {
                 }
             ).start();
         }
-
     };
 
     const handleCheckOut = () => {
@@ -171,7 +164,6 @@ export default function Main() {
     };
 
     const handleNavigationPress = async (screen, scaleValue) => {
-
         await new Promise(resolve => {
             Animated.sequence([
                 Animated.timing(scaleValue, {
@@ -187,10 +179,20 @@ export default function Main() {
             ]).start(resolve);
         });
 
-        // Animation has completed, now navigate
         handleNavigation(screen);
-    }
+    };
 
+    const LoginPressed = () => {
+        // Implement login logic here
+        console.log('Login pressed');
+        handleCloseModal();
+    };
+
+    const SignupPressed = () => {
+        // Implement signup logic here
+        console.log('Signup pressed');
+        handleCloseModal();
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -214,10 +216,9 @@ export default function Main() {
                                 padding: 5,
                                 margin: 5,
                                 flexDirection: 'row',
-                                alignItems: 'center', // Center content vertically
+                                alignItems: 'center',
                             }}
                         >
-                            {/* <AntDesign name="menuunfold" size={30} color={colorScheme.navigationIcons} /> */}
                             <FontAwesome6 name="location-dot" size={30} color={colorScheme.navigationIcons} />
                             <View style={{ marginLeft: 5 }}>
                                 <Text style={{ fontWeight: 'bold' }}>Ambur</Text>
@@ -243,9 +244,10 @@ export default function Main() {
                 )}
             </View>
             <View style={styles.bottomView}>
-                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Home", homeScale)}><Animated.View style={{ transform: [{ scale: homeScale }] }}>
-                    <Icon name="home" size={30} color={screen === "Home" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
-                </Animated.View>
+                <Pressable style={styles.nav} onPress={() => handleNavigationPress("Home", homeScale)}>
+                    <Animated.View style={{ transform: [{ scale: homeScale }] }}>
+                        <Icon name="home" size={30} color={screen === "Home" ? colorScheme.navigationActive : colorScheme.navigationIcons} />
+                    </Animated.View>
                 </Pressable>
                 <Pressable style={styles.nav} onPress={() => handleNavigationPress("Search", searchScale)}>
                     <Animated.View style={{ transform: [{ scale: searchScale }] }}>
@@ -268,21 +270,17 @@ export default function Main() {
                     </Animated.View>
                 </Pressable>
             </View>
-            <Animated.View style={[styles.menu, { transform: [{ translateY: menuAnimation.interpolate({ inputRange: [0, 1], outputRange: [ScreenHeight, 0] }) }] }]}>
-                <View style={styles.menuContainer}>
-                    <View style={styles.mapContainer}>
-                        <Custommap isActive={menu} />
-                    </View>
-                    <View style={styles.addressContainter}>
-                        <TextInput style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 5 }} placeholder='Enter Adress'></TextInput>
-                        <TextInput style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 5, marginVertical: 5 }} placeholder='Enter Landmark (optional)'></TextInput>
-                        <Pressable android_ripple={{ color: 'blue' }} onPress={handleMenuPress} style={{ padding: 10, marginTop: 5, borderWidth: 1, backgroundColor: '#3478c3', alignItems: 'center' }}>
-                            <Text style={{ color: 'white' }}>Deliver here</Text>
-                            {/* <FontAwesome6 name="location-dot" size={30} color={colorScheme.navigationIcons} /> */}
-                        </Pressable>
-                    </View>
-                </View>
-            </Animated.View>
+
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={modalVisible}
+                onRequestClose={handleCloseModal}
+            >
+                <StatusBar backgroundColor={"black"} barStyle={"light"}></StatusBar>
+                <Custommap isActive={modalVisible} />
+            </Modal>
+
             <Animated.View style={[styles.notification, { transform: [{ translateX: notificationAnimation.interpolate({ inputRange: [0, 1], outputRange: [80 * ScreenWidth / 100, 0] }) }] }]}>
                 <View style={styles.notificationIcon}>
                     <Pressable onPress={handleNotificationPress} style={{ padding: 5, margin: 5 }}>
@@ -301,7 +299,7 @@ export default function Main() {
                     </Pressable>
                 </View>
             )}
-            {(notification || menu || payMethodBool) && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
+            {(notification || payMethodBool) && <Pressable onPress={overlayClick} style={styles.overlay}></Pressable>}
         </SafeAreaView>
     );
 }
@@ -356,10 +354,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 12,
         fontWeight: 'bold',
-    },
-    catlogNavigator: {
-        flexDirection: 'row',
-        paddingHorizontal: 10,
     },
     catNav: {
         marginHorizontal: 10,

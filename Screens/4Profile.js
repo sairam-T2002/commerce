@@ -1,81 +1,38 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Dimensions, Pressable, Modal, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { decrement, increment } from '../Redux/Slices/CartSlice';
+import { MaterialIcons } from '@expo/vector-icons';
 import { UserDataHelper } from '../LocalStorage';
-import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import { colorScheme } from '../data';
+import Login from '../Components/Login';
 
 const ScreenWidth = Dimensions.get('window').width;
-const ScreenHeight = Dimensions.get('window').height;
 
 export default function Profile() {
-    // const count = useSelector((state) => state.CartCount.count);
-    // const dispatch = useDispatch();
     const [user, setUser] = useState(null);
-    const [modal, setModal] = useState(false);
-    const usernameRef = useRef(null);
-    const passwordRef = useRef(null);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
     const [loader, setLoader] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
-        async function methodT() {
+        async function fetchUserData() {
             const temp = await UserDataHelper.getUserData("user_info_cred") || null;
-            console.log(temp, "from profile");
             setUser(temp);
             setLoader(false);
         }
-        methodT();
+        fetchUserData();
     }, []);
-
-    const handleLogin = () => {
-        setModal(true);
-    }
 
     const handleLogout = async () => {
         await UserDataHelper.deleteUserData("user_info_cred");
         setUser(null);
-        setUsername('');
-        setPassword('');
     }
 
-    const validateInputs = () => {
-        if (!username.trim()) {
-            Alert.alert('Username Error', 'Username cannot be empty.');
-            usernameRef.current?.focus();
-            return false;
-        }
-        if (username.length < 3) {
-            Alert.alert('Username Error', 'Username must be at least 3 characters long.');
-            usernameRef.current?.focus();
-            return false;
-        }
-        if (!password.trim()) {
-            Alert.alert('Password Error', 'Password cannot be empty.');
-            passwordRef.current?.focus();
-            return false;
-        }
-        if (password.length < 6) {
-            Alert.alert('Password Error', 'Password must be at least 6 characters long.');
-            passwordRef.current?.focus();
-            return false;
-        }
-        return true;
-    };
-
-    const LoginPressed = async () => {
-        console.log("Login pressed");
-        if (validateInputs()) {
-            setUser({ username, password });
-            await UserDataHelper.storeUserData("user_info_cred", { username, password });
-            setModal(false);
-        }
+    const handleLogin = () => {
+        setModalVisible(true);
     }
 
-    const SignupPressed = () => {
-        console.log("Register as a new customer");
+    const handleLoginSuccess = (userData) => {
+        setUser(userData);
+        setModalVisible(false);
     }
 
     return (
@@ -83,7 +40,7 @@ export default function Profile() {
             {loader ? (
                 <ActivityIndicator size="large" color="gray" />
             ) : (
-                user === null || user === undefined ? (
+                user === null ? (
                     <View style={styles.Login}>
                         <Pressable style={styles.LoginBtn} onPress={handleLogin}>
                             <Text style={{ color: 'white' }}>Login</Text>
@@ -128,44 +85,11 @@ export default function Profile() {
                     </View>
                 )
             )}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modal}
-                onRequestClose={() => {
-                    setModal(false);
-                }}
-            >
-                <View style={styles.centeredView}>
-                    <Text>Username<Text style={{ color: 'red' }}>*</Text></Text>
-                    <TextInput
-                        value={username}
-                        onChangeText={setUsername}
-                        ref={usernameRef}
-                        autoFocus={true}
-                        style={[styles.inptcon, usernameRef.current?.isFocused() && { borderColor: '#7cdcfe' }]}
-                    />
-                    <Text>Password<Text style={{ color: 'red' }}>*</Text></Text>
-                    <TextInput
-                        value={password}
-                        onChangeText={setPassword}
-                        ref={passwordRef}
-                        secureTextEntry={true}
-                        style={[styles.inptcon, passwordRef.current?.isFocused() && { borderColor: '#7cdcfe' }]}
-                    />
-                    <View style={styles.modalBtns}>
-                        <Pressable style={styles.LoginBtnModal} onPress={LoginPressed}>
-                            <Text>Login</Text>
-                        </Pressable>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Text>Don't have a account? </Text>
-                            <Pressable onPress={SignupPressed}>
-                                <Text style={styles.signup}>Signup</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            <Login
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onLoginSuccess={handleLoginSuccess}
+            />
         </View>
     );
 }
@@ -185,36 +109,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'green',
         borderRadius: 10,
         padding: 10,
-
-    },
-    centeredView: {
-        flex: 1,
-        width: ScreenWidth,
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        padding: 5
-    },
-    inptcon: {
-        padding: 2,
-        borderWidth: 1,
-        borderColor: 'black',
-        marginVertical: 5
-    },
-    modalBtns: {
-        width: '100%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        // flexDirection: 'row'
-    },
-    LoginBtnModal: {
-        padding: 2,
-        backgroundColor: '#d7d7be',
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 60,
-        height: 30,
-        marginHorizontal: 5
     },
     profileBackground: {
         backgroundColor: '#cccccc',
@@ -241,7 +135,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         paddingHorizontal: 30,
-        // justifyContent: 'center',
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -257,9 +150,5 @@ const styles = StyleSheet.create({
         position: 'absolute',
         marginTop: 60,
         marginLeft: 120,
-    },
-    signup: {
-        textDecorationLine: 'underline',
-        color: '#0078d4'
     }
 });
