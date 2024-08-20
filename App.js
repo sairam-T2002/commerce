@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, StatusBar, LogBox, ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -46,7 +46,6 @@ export default function App() {
     const checkUser = async () => {
       try {
         const userData = await UserDataHelper.getUserData("user_info_cred") || null;
-        console.log(userData, 'login response');
         if (userData) {
           setInitialRoute('App');
           updateGoogleMapsApiKey();

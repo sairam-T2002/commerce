@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, Pressable, TextInput } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector, useDispatch } from 'react-redux';
@@ -6,7 +6,6 @@ import { addItem, removeItem, updateQuantity, updateRQuantity } from '../Redux/S
 import Icon from 'react-native-vector-icons/Feather';
 
 export default function Cards({ item, resetTimer }) {
-    // console.log(item);
     const [quantity, setQuantity] = useState(0);
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(item.qunatityList[0]);

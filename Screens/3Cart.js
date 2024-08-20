@@ -14,13 +14,11 @@ const Cart = () => {
     const delCharge = useSelector((state) => state.Cart.deliveryCharge);
     const dispatch = useDispatch();
     const payMethodBool = useSelector((state) => state.Animations.payMethod);
-    console.log(cart);
     useEffect(() => {
         setTotal([...cart.map(item => item.price * item.Uquantity)])
     }, [cart])
 
     const handleQuantity = (action, prd_id, quantity) => {
-        console.log(action, prd_id, quantity);
         if (action === '+') {
             dispatch(updateQuantity({ id: prd_id, quantity: quantity + 1 }));
         } else {

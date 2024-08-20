@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, StyleSheet, Dimensions, Image, Pressable } from 'react-native';
 
 const Carousel = ({ data, isImage, pagination = true }) => {

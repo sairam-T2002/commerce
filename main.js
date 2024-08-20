@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, Animated, ActivityIndicator, BackHandler, Dimensions, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -21,13 +21,8 @@ const ScreenHeight = Dimensions.get('window').height;
 export default function Main() {
     const fullCatlog = [{ name: 'All' }, ...catlog];
     const scrollViewRef = useRef(null);
-    const [menu, setMenu] = useState(false);
     const [notification, setNotification] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const usernameRef = useRef(null);
-    const passwordRef = useRef(null);
     const screen = useSelector((state) => state.ActiveScreen.ActiveScreen);
     const isLoading = useSelector((state) => state.ActiveScreen.isLoading);
     const navigator = useSelector((state) => state.ActiveScreen.navigator);

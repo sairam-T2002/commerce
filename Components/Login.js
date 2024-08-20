@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, Pressable, TextInput, Alert } from 'react-native';
 import { UserDataHelper } from '../LocalStorage';
 import { fetchApiPOST } from '../ApiManager';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native'; // Import CommonActions
 
 const ScreenWidth = Dimensions.get('window').width;
 
@@ -46,10 +46,16 @@ export default function Login() {
             }
             if (response.ok) {
                 const data = await response.json();
-                console.log(data, 'login response');
                 const userData = { username, accessToken: data.AccessToken, refreshToken: data.RefreshToken };
                 await UserDataHelper.storeUserData("user_info_cred", userData);
-                navigation.navigate('App'); // Navigate to the main app screen
+
+                // Reset the navigation state to prevent going back to the login screen
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'App' }],
+                    })
+                );
             }
         }
     };

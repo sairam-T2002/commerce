@@ -1,9 +1,11 @@
 import { UserDataHelper } from './LocalStorage';
 
-const baseUrl = 'http://localhost:5000/';
+const baseUrl = 'http://10.0.5.38:5085/';
 
 const getUserCredentials = async () => {
-    return await UserDataHelper.getUserData("user_info_cred") || null;
+    const usr = await UserDataHelper.getUserData("user_info_cred") || null;
+    console.log(usr, 'user credentials');
+    return usr;
 };
 
 const fetchApiGET = async (endpoint, params) => {
@@ -15,6 +17,7 @@ const fetchApiGET = async (endpoint, params) => {
 
     const url = new URL(endpoint, baseUrl);
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    console.log(url, 'GET method url');
 
     try {
         const response = await fetch(url, {
@@ -26,8 +29,8 @@ const fetchApiGET = async (endpoint, params) => {
         });
 
         if (response.status === 401) {
-            const dataR = await ApprefreshToken(usr.accessToken, usr.refreshToken, () => fetchApiGET(endpoint, params));
-            return await dataR.json();
+            const dataR = await appRefreshToken(usr.accessToken, usr.refreshToken, () => fetchApiGET(endpoint, params));
+            return dataR;
         }
 
         if (!response.ok) {
@@ -35,9 +38,7 @@ const fetchApiGET = async (endpoint, params) => {
             return response;
         }
 
-        const data = await response.json();
-        console.log(data, 'response from server');
-        return data;
+        return response;
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
         throw error; // Rethrow error to be handled by caller
@@ -46,12 +47,10 @@ const fetchApiGET = async (endpoint, params) => {
 
 const fetchApiPOST = async (endpoint, body, isLogin = false) => {
     const usr = await getUserCredentials();
-    console.log(usr);
     if (!usr && !isLogin) {
         console.error("USER_NOT_LOGGED_IN");
         return "USER_NOT_LOGGED_IN";
     }
-
     const url = new URL(endpoint, baseUrl);
     try {
         const response = await fetch(url, {
@@ -64,8 +63,8 @@ const fetchApiPOST = async (endpoint, body, isLogin = false) => {
         });
 
         if (response.status === 401) {
-            const dataR = await ApprefreshToken(usr.accessToken, usr.refreshToken, () => fetchApiPOST(endpoint, body));
-            return await dataR.json();
+            const dataR = await appRefreshToken(usr.accessToken, usr.refreshToken, () => fetchApiPOST(endpoint, body, isLogin));
+            return dataR;
         }
 
         if (!response.ok) {
@@ -73,17 +72,16 @@ const fetchApiPOST = async (endpoint, body, isLogin = false) => {
             return response;
         }
 
-        const data = await response.json();
-        console.log(data, 'response from server');
-        return data;
+        return response;
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
         throw error; // Rethrow error to be handled by caller
     }
 };
 
-const ApprefreshToken = async (AccessToken, RefreshToken, callback) => {
+const appRefreshToken = async (AccessToken, RefreshToken, callback) => {
     try {
+        console.log(AccessToken, RefreshToken, '       tokens');
         const response = await fetchApiPOST('api/Auth/Refresh', { AccessToken, RefreshToken });
 
         if (!response.ok) {

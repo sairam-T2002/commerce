@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { LocationHelper } from '../LocationHelper'; // Make sure this path is correct
